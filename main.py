@@ -4,9 +4,9 @@ import utilities as utils
 import matplotlib.pyplot as plt
 
 # Time between each iteration
-dt = 0.01
+dt = 0.00000001
 # Total time length [s]
-time = 5000
+time = 0.001
 # Time steps
 time_steps = int(time/dt)
 
@@ -23,6 +23,9 @@ def main():
 
 r, v = main()
 
+print(r)
+print(v)
+
 r_i = r[0, :]
 r_e = r[-1, :]
 rr = r_e-r_i
@@ -32,3 +35,8 @@ print("Particle moved a distance of: ", distance, "Earth-radius lengths.")
 utils.plot_3d(r)
 
 plt.show()
+
+inx = utils.find_nearest(r, 1)
+print(r[inx,:])
+
+

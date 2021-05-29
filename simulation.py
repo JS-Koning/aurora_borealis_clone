@@ -96,7 +96,7 @@ def simulate(charge_factor, mass_factor, dt, time_steps):
     # Initial condition
     #r_particle[0, :] = np.array([0.0, -7.85, -1.53])
     #v_particle[0, :] = np.array([0.0, 0.3, 0.3])
-    v_particle[0, :], r_particle[0, :],  = utils.initialize_loc_vel(300000, 10, 0, 0)
+    v_particle[0, :], r_particle[0, :],  = utils.initialize_loc_vel(300000, 100, 1, 0)
     
     # Simulate using algorithm
     for i in range(1, time_steps):
