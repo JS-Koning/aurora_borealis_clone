@@ -21,7 +21,7 @@ def plot_3d(data):
     zline = data[:, 2]
 
     # Create a sphere
-    r = 1
+    r = 2
     pi = np.pi
     cos = np.cos
     sin = np.sin
