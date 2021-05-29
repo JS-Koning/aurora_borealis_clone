@@ -1,4 +1,5 @@
 import numpy as np
+import utilities as utils
 
 """Constants and parameters"""
 
@@ -93,9 +94,10 @@ def simulate(charge_factor, mass_factor, dt, time_steps):
     q = charge_factor * q_charge
 
     # Initial condition
-    r_particle[0, :] = np.array([0.0, -7.85, -1.53])
-    v_particle[0, :] = np.array([0.0, 0.3, 0.3])
-
+    #r_particle[0, :] = np.array([0.0, -7.85, -1.53])
+    #v_particle[0, :] = np.array([0.0, 0.3, 0.3])
+    v_particle[0, :], r_particle[0, :],  = utils.initialize_loc_vel(300000, 10, 0, 0)
+    
     # Simulate using algorithm
     for i in range(1, time_steps):
         if (i+1) % int(time_steps / 100) == 0:

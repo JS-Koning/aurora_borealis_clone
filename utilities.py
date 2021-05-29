@@ -38,3 +38,20 @@ def plot_3d(data):
     axisEqual3D(ax)
 
     plt.show(block=False)
+
+
+def initialize_loc_vel(init_velocity, distance_earth, offset_y, offset_z):
+    """
+    Initalize slow solar wind
+    init_velocity = m/s
+    particles only moving in x position
+    distance_earth is the starting distance in the x_direction, offset is based, and scaled, in yz plane
+    """
+    if init_velocity<300000:
+        print('init_velocity is too low')
+    elif init_velocity>500000:
+        print('init_velocity is too high')
+    else:
+        velocity = np.array([init_velocity, 0, 0])
+        loc = np.array([distance_earth, offset_y, offset_z])
+    return velocity, loc

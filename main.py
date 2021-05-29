@@ -4,7 +4,7 @@ import utilities as utils
 import matplotlib.pyplot as plt
 
 # Time between each iteration
-dt = 0.0001
+dt = 0.01
 # Total time length [s]
 time = 5000
 # Time steps
