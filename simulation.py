@@ -93,12 +93,12 @@ def simulate(charge_factor, mass_factor, dt, time_steps):
     q = charge_factor * q_charge
 
     # Initial condition
-    r_particle[0, :] = np.array([-30.0, -30.0, -30.0])
-    v_particle[0, :] = np.array([-2.0, -1.0, 10.0])
+    r_particle[0, :] = np.array([0.0, -7.85, -1.53])
+    v_particle[0, :] = np.array([0.0, 0.3, 0.3])
 
     # Simulate using algorithm
     for i in range(1, time_steps):
-        if i % int(time_steps / 100) == 0:
+        if (i+1) % int(time_steps / 100) == 0:
             print("Progress:", ("%.2f" % ((i+1) / time_steps * 100)), "%...")
 
         # Runge-Kutta-4 algorithm
