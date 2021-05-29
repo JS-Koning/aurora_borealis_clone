@@ -37,6 +37,9 @@ utils.plot_3d(r)
 plt.show()
 
 inx = utils.find_nearest(r, 1)
+print(r[inx-1, :])
 print(r[inx,:])
+print(r[inx+1, :])
+
 
 
