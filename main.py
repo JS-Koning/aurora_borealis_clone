@@ -14,7 +14,16 @@ charge_factor = 2.0
 
 
 def main():
-    sim.simulate(charge_factor, mass_factor, dt, time_steps)
+    r_data, v_data = sim.simulate(charge_factor, mass_factor, dt, time_steps)
+
+    return r_data, v_data
 
 
-main()
+r, v = main()
+
+r_i = r[0, :]
+r_e = r[-1, :]
+rr = r_e-r_i
+distance = np.sqrt(rr[0]**2 + rr[1]**2 + rr[2]**2)
+
+print("Particle travelled a distance of: ", distance, "meters.")

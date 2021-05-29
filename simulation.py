@@ -70,6 +70,7 @@ def runge_kutta_4(charge, mass, dt, r_particle_last_1, v_particle_last_1):
     v_particle_last_4 = v_particle_last_3 + a_particle_last_3 * dt
     a_particle_last_4 = charge / mass * np.cross(v_particle_last_4, magnetic_field(r_particle_last_4, r_dipole))
 
+    # New position and velocity
     r_particle = r_particle_last_1 + (dt / 6.0) *\
         (v_particle_last_1 + 2.0 * (v_particle_last_2 + v_particle_last_3) + v_particle_last_4)
     v_particle = v_particle_last_1 + (dt / 6.0) * \
@@ -90,13 +91,15 @@ def simulate(charge_factor, mass_factor, dt, time_steps):
     q = charge_factor * q_charge
 
     # Initial condition
-    r_particle[0, :] = np.array([5.0, 5.0, 5.0])
-    v_particle[0, :] = np.array([1.0, 1.0, 1.0])
+    r_particle[0, :] = np.array([-30.0, -30.0, -30.0])
+    v_particle[0, :] = np.array([-2.0, -1.0, 10.0])
 
+    # Simulate using algorithm
     for i in range(1, time_steps):
         if i % int(time_steps / 100) == 0:
-            print("Progress:", i / time_steps * 100, "%...")
+            print("Progress:", ("%.2f" % (i / time_steps * 100)), "%...")
 
+        # Runge-Kutta-4 algorithm
         r_particle[i, :], v_particle[i, :] = runge_kutta_4(q, m, dt, r_particle[i-1, :], v_particle[i-1, :])
 
     return r_particle, v_particle
