@@ -1,10 +1,12 @@
 import numpy as np
 import simulation as sim
+import utilities as utils
+import matplotlib.pyplot as plt
 
 # Time between each iteration
 dt = 0.001
 # Total time length [s]
-time = 5000
+time = 50
 # Time steps
 time_steps = int(time/dt)
 
@@ -27,3 +29,6 @@ rr = r_e-r_i
 distance = np.sqrt(rr[0]**2 + rr[1]**2 + rr[2]**2)
 
 print("Particle travelled a distance of: ", distance, "meters.")
+utils.plot_3d(r)
+
+plt.show()
