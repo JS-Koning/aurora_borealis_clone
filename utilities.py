@@ -3,6 +3,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 def axisEqual3D(ax):
+    # A hack to make 3D aspect ratio equal in all axis
     extents = np.array([getattr(ax, 'get_{}lim'.format(dim))() for dim in 'xyz'])
     sz = extents[:,1] - extents[:,0]
     centers = np.mean(extents, axis=1)
