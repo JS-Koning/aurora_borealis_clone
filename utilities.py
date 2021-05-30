@@ -1,6 +1,7 @@
 from mpl_toolkits import mplot3d
 import numpy as np
 import matplotlib.pyplot as plt
+import PIL
 
 
 def axisEqual3D(ax):
@@ -14,7 +15,7 @@ def axisEqual3D(ax):
         getattr(ax, 'set_{}lim'.format(dim))(ctr - r, ctr + r)
 
 
-def plot_3d(data, close):
+def plot_3d(data, simple, close):
     fig = plt.figure()
     ax = plt.axes(projection='3d')
 
@@ -22,29 +23,46 @@ def plot_3d(data, close):
     yline = data[:, 1]
     zline = data[:, 2]
 
+    if close:
+        index = np.where(data[:-1,:] == data[1:,:])[0]
+        xline = xline[max(0,index[0] - 10000):min(index[0],len(xline))]
+        yline = yline[max(0,index[0] - 10000):min(index[0],len(yline))]
+        zline = zline[max(0,index[0] - 10000):min(index[0],len(zline))]
+
     # Create a sphere
+    bm = PIL.Image.open('Images/bluemarble.jpg')
+    bm = np.array(bm.resize([int(d / 16) for d in bm.size])) / 256
+
     r = 2
     pi = np.pi
-    cos = np.cos
-    sin = np.sin
-    phi, theta = np.mgrid[0.0:pi:100j, 0.0:2.0 * pi:100j]
-    x = r * sin(phi) * cos(theta)
-    y = r * sin(phi) * sin(theta)
-    z = r * cos(phi)
+    # coordinates of the image - don't know if this is entirely accurate, but probably close
+    lons = np.linspace(-180, 180, bm.shape[1]) * np.pi / 180
+    lats = np.linspace(-90, 90, bm.shape[0])[::-1] * np.pi / 180
+    x = r* np.outer(np.cos(lons), np.cos(lats)).T
+    y = r*np.outer(np.sin(lons), np.cos(lats)).T
+    z = r*np.outer(np.ones(np.size(lons)), np.sin(lats)).T
 
-    ax.plot_surface(
-        x, y, z, rstride=1, cstride=1, color='c', alpha=0.6, linewidth=0)
+    ax.plot3D(xline, yline, zline, 'red')
 
-    ax.plot3D(xline, yline, zline, 'gray')
+    if simple:
+        ax.plot_surface(
+            x, y, z, rstride=1, cstride=1, color='b', alpha=0.75, linewidth=0)
+    else:
+        ax.plot_surface(
+            x, y, z, rstride=1, cstride=1, facecolors=bm, alpha=0.75, linewidth=0)
 
     if close:
         # Only plot close to Earth
-        ax.axes.set_xlim3d(left=-10, right=10)
-        ax.axes.set_ylim3d(bottom=-10, top=10)
-        ax.axes.set_zlim3d(bottom=-10, top=10)
+        ax.axes.set_xlim3d(left=-6, right=6)
+        ax.axes.set_ylim3d(bottom=-6, top=6)
+        ax.axes.set_zlim3d(bottom=-6, top=6)
     else:
         # Plot completely
         axisEqual3D(ax)
+
+    ax.set_xlabel("x")
+    ax.set_ylabel("y")
+    ax.set_zlabel("z")
 
     plt.show(block=False)
 

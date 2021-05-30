@@ -84,7 +84,7 @@ def runge_kutta_4(charge, mass, dt, r_particle_last_1, v_particle_last_1):
     return r_particle, v_particle
 
 
-def simulate(charge_factor, mass_factor, dt, time_steps):
+def simulate(r_particle_init, v_particle_init, charge_factor, mass_factor, dt, time_steps):
     # Initialize
     print("Simulating single particle with [m =", mass_factor, "* proton mass, q =", charge_factor,
           "* elementary charge] using Runge-Kutta-4 Algorithm...")
@@ -93,11 +93,11 @@ def simulate(charge_factor, mass_factor, dt, time_steps):
 
     # Charged particle
     m = mass_factor * m_electron
-    q = charge_factor * q_charge # must be positive
+    q = charge_factor * -q_charge
 
     # Initial condition
-    r_particle[0, :] = np.array([-5E9, 4E7, -2E7]) / r_earth # now in m (only vary y,z => grid)
-    v_particle[0, :] = np.array([2000000.0, 0.0, 0.0]) # min 250, max 3000 km/s
+    r_particle[0, :] = r_particle_init / r_earth # now in m (only vary y,z => grid)
+    v_particle[0, :] = v_particle_init # min 250, max 3000 km/s
     #v_particle[0, :], r_particle[0, :],  = utils.initialize_loc_vel(300000, 100, 1, 0)
     
     # Simulate using algorithm
@@ -112,6 +112,7 @@ def simulate(charge_factor, mass_factor, dt, time_steps):
         if r_particle[i, 0]**2 + r_particle[i, 1]**2 + r_particle[i, 2]**2 > r_particle[i-1, 0]**2 +\
                                                         r_particle[i-1, 1]**2 + r_particle[i-1, 2]**2:
             r_particle[i, :] = r_particle[i-1, :]
+            v_particle[i, :] = v_particle[i-1, :]
 
 
 
