@@ -27,11 +27,7 @@
 
 4. Summary
     - We chose to neglect relativity. The initial speeds are not within 1/10 the velocity of the speed of light, thus relativity can be neglected (might change in the future).
-<<<<<<< HEAD
-    - Beta+ particles move as expected, starting with a low- to high solar velocity (250km/s-2000km/s), which is a non-relativistic speed, spiral forming is present. These are shown in the figure below.
-=======
-    - Beta- particles move as expected, starting with a low velocity, spiral forming is present. These are shown in the figure below.
->>>>>>> 4e690f67289ab74137b0356720c729be96333016
+    - Beta- particles move as expected, starting with a low- to high solar velocity (250km/s-2000km/s), which is a non-relativistic speed, spiral forming is present. These are shown in the figure below.
     
     ![](Images/proj3_fig1.png)
     

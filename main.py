@@ -19,12 +19,12 @@ charge_factor = 2.0
 position_x = -5E9
 
 particles_y = 6
-minimum_y = -9E7
-maximum_y = 9E7
+minimum_y = -6E7
+maximum_y = 6E7
 
 particles_z = 6
-minimum_z = -9E7
-maximum_z = 9E7
+minimum_z = -6E7
+maximum_z = 6E7
 
 # Initial velocities [m/s]
 minimum_v = 2.5e5

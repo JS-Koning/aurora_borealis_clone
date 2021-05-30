@@ -19,7 +19,7 @@ def plot_earth(simple):
     ax = plt.axes(projection='3d')
 
     # Create a sphere
-    bm = PIL.Image.open('Images/bluemarble.jpg')
+    bm = PIL.Image.open('earth.jpg')
     bm = np.array(bm.resize([int(d / 16) for d in bm.size])) / 256
 
     r = 2
