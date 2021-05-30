@@ -15,12 +15,22 @@ relativistic = True # TODO
 mass_factor = 1.0
 charge_factor = 2.0
 
-# Particle grid
+# Initial positions grid [m]
+position_x = -5E9
+
+particles_y = 10
 minimum_y = -3E8
 maximum_y = 3E8
+
+particles_z = 10
 minimum_z = -3E8
 maximum_z = 3E8
 
+# Initial velocities [m/s]
+minimum_v = 2.5e5
+maximum_v = 3.0e6
+
+# Plot settings
 plot_simple = False
 plot_near_earth = True
 

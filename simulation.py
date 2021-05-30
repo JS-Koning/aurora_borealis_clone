@@ -114,6 +114,4 @@ def simulate(r_particle_init, v_particle_init, charge_factor, mass_factor, dt, t
             r_particle[i, :] = r_particle[i-1, :]
             v_particle[i, :] = v_particle[i-1, :]
 
-
-
     return r_particle, v_particle

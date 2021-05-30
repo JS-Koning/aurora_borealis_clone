@@ -25,9 +25,10 @@ def plot_3d(data, simple, close):
 
     if close:
         index = np.where(data[:-1,:] == data[1:,:])[0]
-        xline = xline[max(0,index[0] - 10000):min(index[0],len(xline))]
-        yline = yline[max(0,index[0] - 10000):min(index[0],len(yline))]
-        zline = zline[max(0,index[0] - 10000):min(index[0],len(zline))]
+        if len(index) != 0:
+            xline = xline[max(0,index[0] - 10000):min(index[0],len(xline))]
+            yline = yline[max(0,index[0] - 10000):min(index[0],len(yline))]
+            zline = zline[max(0,index[0] - 10000):min(index[0],len(zline))]
 
     # Create a sphere
     bm = PIL.Image.open('Images/bluemarble.jpg')
