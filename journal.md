@@ -36,6 +36,10 @@
     ![](Images/proj3_fig4.png)
     
     - This shielding of the earth is to be expected. A goal is to find specific initial location(s) ranges and velocity ranges where this does not happen.
+    - A beautifull image is shown below with various trajectories.
+    
+    ![](Images/proj3_fig5.png)    
+    
     - For next week, we expect to have an array of parallel incoming particles, and follow the trajectory of each individual particle with varying incoming speeds. 
 </br>
 </br>
