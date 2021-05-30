@@ -18,13 +18,13 @@ charge_factor = 2.0
 # Initial positions grid [m]
 position_x = -5E9
 
-particles_y = 10
-minimum_y = -3E8
-maximum_y = 3E8
+particles_y = 3
+minimum_y = -3E7
+maximum_y = 3E7
 
-particles_z = 10
-minimum_z = -3E8
-maximum_z = 3E8
+particles_z = 3
+minimum_z = -3E7
+maximum_z = 3E7
 
 # Initial velocities [m/s]
 minimum_v = 2.5e5
@@ -36,17 +36,20 @@ plot_near_earth = True
 
 
 def main():
-    r_init = np.array([-5E9, -5E7, 2E7])
-    v_init = np.array([2000000.0, 0.0, 0.0])
-    r_data, v_data = sim.simulate(r_init, v_init, charge_factor, mass_factor, dt, time_steps)
+    fig, ax = utils.plot_earth(plot_simple)
 
+    for position_y in np.linspace(minimum_y,maximum_y,particles_y):
+        for position_z in np.linspace(minimum_z,maximum_z,particles_z):
+            r_init = np.array([position_x, position_y, position_z])
+            v_init = np.array([2000000.0, 0.0, 0.0])
+
+            r_data, v_data = sim.simulate(r_init, v_init, charge_factor, mass_factor, dt, time_steps)
+
+            utils.plot_3d(ax, r_data, plot_near_earth)
     return r_data, v_data
 
 
 r, v = main()
-
-#print(r)
-#print(v)
 
 r_i = r[0, :]
 r_e = r[-1, :]
@@ -54,7 +57,7 @@ rr = r_e-r_i
 distance = np.sqrt(rr[0]**2 + rr[1]**2 + rr[2]**2)
 
 print("Particle moved a distance of: ", distance, "Earth-radius lengths.")
-utils.plot_3d(r, plot_simple, plot_near_earth)
+
 
 plt.show()
 
