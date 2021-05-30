@@ -70,7 +70,7 @@ def main():
 
             # Plot particle trajectory
             if r_data[-1,0]**2 + r_data[-1,1]**2 + r_data[-1,2]**2 < 3**2:
-                # Only plot when end-point is closer to than 3 Earth-radia
+                # Only plot when end-point is closer to than 3 Earth-radia (ignore deflected particles)
                 utils.plot_3d(ax, r_data, plot_near_earth, plot_points)
 
     return r_data, v_data
