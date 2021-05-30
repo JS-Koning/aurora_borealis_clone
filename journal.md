@@ -19,11 +19,10 @@
 
 4. Summary
     - We chose to neglect relativity. The initial speeds are not within 1/10 the velocity of the speed of light, thus relativity can be neglected (might change in the future).
-    - Beta+ particles move as expected, starting with a low velocity, spiral forming is present. These are shown in the figure below.
+    - Beta+ particles move as expected, starting with a low- to high solar velocity (250km/s-2000km/s), which is a non-relativistic speed, spiral forming is present. These are shown in the figure below.
     
     ![](Images/proj3_fig1.png)
     
-    - Note the particles have a low starting velocity, not representing a physical solar ejection, however it does show the behaviour correctly.
     - The figure below shows a better 3D behaviour, with a different starting location.
     
     ![](Images/proj3_fig2.png)
@@ -35,7 +34,7 @@
     
     ![](Images/proj3_fig4.png)
     
-    - This shielding of the earth is to be expected. A goal is to find specific initial location(s) ranges and velocity ranges where this does not happen.
+    - This shielding of the earth is to be expected. A goal is to find specific initial location(s) ranges and velocity ranges where this does not happen. The code is written in such a way, that when the velocity reaches a very low value, the simulation is aborted to increase computing speed. This is because stationary particles are not of interest.
     - A beautifull image is shown below with various trajectories.
     
     ![](Images/proj3_fig5.png)    
