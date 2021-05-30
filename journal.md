@@ -19,13 +19,12 @@
 
 4. Summary
     - We chose to neglect relativity. The initial speeds are not within 1/10 the velocity of the speed of light, thus relativity can be neglected (might change in the future).
-    - Alpha particles move as expected, starting with a low velocity, spiral forming is present. These are shown in figure xxxxx.
-    ![](Week1/placeholder.png)
+    - Beta+ particles move as expected, starting with a low velocity, spiral forming is present. These are shown in the figure below.
+    ![](Images/Figure_1.png)
     
-    - For electrons, the movement is as following:
-    ![](Week1/placeholder2.png)
+    - For Beta- particles, the behaviour is not as expected, probably due to a bug in the force calculations. Spiral forming is not present and thus requires a fix.
     
-    - However, we expect the same behaviour spiraling as alpha particles. However, this is not present. Currently, we have no fix for these problems. This will be later adressed.
+    - For next week, we expect to have an array of parallel incoming particles, and follow the trajectory of each individual particle with varying incoming speeds. 
 </br>
 </br>
 5. Questions
