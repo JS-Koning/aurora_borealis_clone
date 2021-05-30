@@ -102,7 +102,7 @@ def simulate(r_particle_init, v_particle_init, charge_factor, mass_factor, dt, t
     
     # Simulate using algorithm
     for i in range(1, time_steps):
-        if (i+1) % int(time_steps / 100) == 0:
+        if (i+1) % int(time_steps / 10) == 0:
             print("Progress:", ("%.2f" % ((i+1) / time_steps * 100)), "%...")
 
         # Runge-Kutta-4 algorithm

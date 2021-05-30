@@ -22,7 +22,7 @@ def plot_earth(simple):
     bm = PIL.Image.open('earth.jpg')
     bm = np.array(bm.resize([int(d / 16) for d in bm.size])) / 256
 
-    r = 2
+    r = 1
     pi = np.pi
     # coordinates of the image - don't know if this is entirely accurate, but probably close
     lons = np.linspace(-180, 180, bm.shape[1]) * np.pi / 180
@@ -46,7 +46,7 @@ def plot_earth(simple):
 
     return fig, ax
 
-def plot_3d(ax, data, close):
+def plot_3d(ax, data, close, points):
     xline = data[:, 0]
     yline = data[:, 1]
     zline = data[:, 2]
@@ -54,9 +54,9 @@ def plot_3d(ax, data, close):
     if close:
         index = np.where(data[:-1,:] == data[1:,:])[0]
         if len(index) != 0:
-            xline = xline[max(0,index[0] - 10000):min(index[0],len(xline))]
-            yline = yline[max(0,index[0] - 10000):min(index[0],len(yline))]
-            zline = zline[max(0,index[0] - 10000):min(index[0],len(zline))]
+            xline = xline[max(0,index[0] - points):min(index[0],len(xline))]
+            yline = yline[max(0,index[0] - points):min(index[0],len(yline))]
+            zline = zline[max(0,index[0] - points):min(index[0],len(zline))]
 
     ax.plot3D(xline, yline, zline)
 

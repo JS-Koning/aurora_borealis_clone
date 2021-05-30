@@ -3,28 +3,32 @@ import simulation as sim
 import utilities as utils
 import matplotlib.pyplot as plt
 
-# Time between each iteration
-dt = 1E-9
+# Seed for reproducibility
+seed = 420
+np.random.seed(seed)
+
+# Time between each iteration # okay: 1E-7 | good: 1E-8 | best: 1E-9
+dt = 1E-7
 # Total time length [s]
-time = 1E-3
+time = 1E-2
 # Time steps
 time_steps = int(time/dt)
 
 # Factors to initialize (relativistic) charged particle with
-relativistic = True # TODO
+relativistic = False #  TODO
 mass_factor = 1.0
 charge_factor = 2.0
 
 # Initial positions grid [m]
-position_x = -5E9
+position_x = -1E10
 
-particles_y = 6
-minimum_y = -6E7
-maximum_y = 6E7
+particles_y = 20
+minimum_y = -1E8
+maximum_y = 1E8
 
-particles_z = 6
-minimum_z = -6E7
-maximum_z = 6E7
+particles_z = 20
+minimum_z = -1E8
+maximum_z = 1E8
 
 # Initial velocities [m/s]
 minimum_v = 2.5e5
@@ -33,19 +37,35 @@ maximum_v = 3.0e6
 # Plot settings
 plot_simple = False
 plot_near_earth = True
+plot_points = 20
 
 
 def main():
+    # Plot Earth
     fig, ax = utils.plot_earth(plot_simple)
 
-    for position_y in np.linspace(minimum_y,maximum_y,particles_y):
-        for position_z in np.linspace(minimum_z,maximum_z,particles_z):
-            r_init = np.array([position_x, position_y, position_z])
-            v_init = np.array([2000000.0, 0.0, 0.0])
+    y_space = np.linspace(minimum_y,maximum_y,particles_y)
+    z_space = np.linspace(minimum_z,maximum_z,particles_z)
 
+    for y in range(len(y_space)):
+        for z in range(len(z_space)):
+            print("Simulating particle:", y*particles_y + z + 1, "out of", particles_y*particles_z)
+
+            # Define grid positions
+            position_y = y_space[y]
+            position_z = z_space[z]
+
+            # Initialize particle position
+            r_init = np.array([position_x, position_y, position_z])
+            # Initialize particle velocity
+            v_init = np.array([np.random.normal((maximum_v+minimum_v)/2,(maximum_v+minimum_v)/10), 0.0, 0.0])
+
+            # Simulate particle
             r_data, v_data = sim.simulate(r_init, v_init, charge_factor, mass_factor, dt, time_steps)
 
-            utils.plot_3d(ax, r_data, plot_near_earth)
+            # Plot particle trajectory
+            utils.plot_3d(ax, r_data, plot_near_earth, plot_points)
+
     return r_data, v_data
 
 
@@ -57,7 +77,6 @@ rr = r_e-r_i
 distance = np.sqrt(rr[0]**2 + rr[1]**2 + rr[2]**2)
 
 print("Particle moved a distance of: ", distance, "Earth-radius lengths.")
-
 
 plt.show()
 
