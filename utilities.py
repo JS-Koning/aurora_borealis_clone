@@ -66,17 +66,29 @@ def initialize_loc_vel(init_velocity, distance_earth, offset_y, offset_z):
     return velocity, loc
 
 
-def find_nearest(locations, value):
-    """
-    find the index of the specified value in the location
-    """
-    #create distance of earth array
-    array_r_2 =locations**2
-    polar_r = np.sum(array_r_2, axis=1)
-    polar = polar_r**0.5
-    #find nearest value 
-    #array = np.asarray(polar)
-    idx = (np.abs(polar - value)).argmin()
+def find_nearest_index(array, value):
+    array = np.asarray(array)
+    idx = (np.abs(array - value)).argmin()
     return idx
+
+
+def plot_time_velocity(velocities, dt):
+    vel_abs = np.linalg.norm(velocities, axis=1)
+    time_array = np.arange(0, dt*len(vel_abs), dt)
+    plt.plot(time_array, vel_abs)
+    plt.ylabel('Velocity [m/s]')
+    plt.xlabel('Time [s]')
+    plt.show()
+    return
+
+
+def plot_time_distance(distances, dt):
+    distance_abs = np.linalg.norm(distances, axis=1)
+    time_array = np.arange(0, dt*len(distance_abs), dt)
+    plt.plot(time_array, distance_abs)
+    plt.ylabel('distance [r_earths]')
+    plt.xlabel('Time [s]')
+    plt.show()
+    return
 
 
