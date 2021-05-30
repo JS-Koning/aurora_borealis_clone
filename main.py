@@ -4,14 +4,14 @@ import utilities as utils
 import matplotlib.pyplot as plt
 
 # Time between each iteration
-dt = 0.00000001
+dt = 0.0000000001
 # Total time length [s]
 time = 0.001
 # Time steps
 time_steps = int(time/dt)
 
-# Factor to initialize charged particle with
-mass_factor = 4.0
+# Factors to initialize charged particle with
+mass_factor = 1.0
 charge_factor = 2.0
 
 
@@ -23,8 +23,8 @@ def main():
 
 r, v = main()
 
-print(r)
-print(v)
+#print(r)
+#print(v)
 
 r_i = r[0, :]
 r_e = r[-1, :]
@@ -32,7 +32,7 @@ rr = r_e-r_i
 distance = np.sqrt(rr[0]**2 + rr[1]**2 + rr[2]**2)
 
 print("Particle moved a distance of: ", distance, "Earth-radius lengths.")
-utils.plot_3d(r)
+utils.plot_3d(r, True)
 
 plt.show()
 
