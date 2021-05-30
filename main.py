@@ -60,11 +60,18 @@ def main():
             # Initialize particle velocity
             v_init = np.array([np.random.normal((maximum_v+minimum_v)/2,(maximum_v+minimum_v)/10), 0.0, 0.0])
 
+            # Change particles's charge for symmetry
+            charge_factor2 = 1
+            if position_y>= 0:
+                charge_factor2 = -1
+
             # Simulate particle
-            r_data, v_data = sim.simulate(r_init, v_init, charge_factor, mass_factor, dt, time_steps)
+            r_data, v_data = sim.simulate(r_init, v_init, charge_factor*charge_factor2, mass_factor, dt, time_steps)
 
             # Plot particle trajectory
-            utils.plot_3d(ax, r_data, plot_near_earth, plot_points)
+            if r_data[-1,0]**2 + r_data[-1,1]**2 + r_data[-1,2]**2 < 3**2:
+                # Only plot when end-point is closer to than 3 Earth-radia
+                utils.plot_3d(ax, r_data, plot_near_earth, plot_points)
 
     return r_data, v_data
 
