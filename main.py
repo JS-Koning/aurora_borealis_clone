@@ -18,11 +18,11 @@ charge_factor = 2.0
 # Initial positions grid [m]
 position_x = -5E9
 
-particles_y = 3
+particles_y = 6
 minimum_y = -3E7
 maximum_y = 3E7
 
-particles_z = 3
+particles_z = 6
 minimum_z = -3E7
 maximum_z = 3E7
 
