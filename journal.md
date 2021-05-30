@@ -3,23 +3,31 @@
 ## Week 1
 1. General
     - Background information gathering
+    - Basic simulation implementation
+        - Magnetic field
+        - Earth (with tilt)
+        - Particle system
     - Runge Kutta 4th order implementation
+        - For errors smaller than 5th order
     - Numba implementation
         - Significant improvement in computation speed
+    - 3D plots
+        - Earth model
+        - Particle trajectories
 </br>
 </br>
 2. Review (w.r.t) original plan
-    - x
+    - Nothing
 </br>
 </br>
 3. Things that need improvement
     - Electron implementation
         - Electron behaviour is not as expected, spiral forming not always present.
-    - Jim - Install new GUI, current one is not working correctly for 3D plotting
+    - Jim - Install proper IDE, current one is not working correctly for 3D plotting
 
 4. Summary
     - We chose to neglect relativity. The initial speeds are not within 1/10 the velocity of the speed of light, thus relativity can be neglected (might change in the future).
-    - Beta+ particles move as expected, starting with a low velocity, spiral forming is present. These are shown in the figure below.
+    - Beta- particles move as expected, starting with a low velocity, spiral forming is present. These are shown in the figure below.
     
     ![](Images/proj3_fig1.png)
     
