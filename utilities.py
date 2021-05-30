@@ -14,20 +14,9 @@ def axisEqual3D(ax):
     for ctr, dim in zip(centers, 'xyz'):
         getattr(ax, 'set_{}lim'.format(dim))(ctr - r, ctr + r)
 
-
-def plot_3d(data, simple, close):
+def plot_earth(simple):
     fig = plt.figure()
     ax = plt.axes(projection='3d')
-
-    xline = data[:, 0]
-    yline = data[:, 1]
-    zline = data[:, 2]
-
-    if close:
-        index = np.where(data[:-1,:] == data[1:,:])[0]
-        xline = xline[max(0,index[0] - 10000):min(index[0],len(xline))]
-        yline = yline[max(0,index[0] - 10000):min(index[0],len(yline))]
-        zline = zline[max(0,index[0] - 10000):min(index[0],len(zline))]
 
     # Create a sphere
     bm = PIL.Image.open('Images/bluemarble.jpg')
@@ -38,11 +27,9 @@ def plot_3d(data, simple, close):
     # coordinates of the image - don't know if this is entirely accurate, but probably close
     lons = np.linspace(-180, 180, bm.shape[1]) * np.pi / 180
     lats = np.linspace(-90, 90, bm.shape[0])[::-1] * np.pi / 180
-    x = r* np.outer(np.cos(lons), np.cos(lats)).T
-    y = r*np.outer(np.sin(lons), np.cos(lats)).T
-    z = r*np.outer(np.ones(np.size(lons)), np.sin(lats)).T
-
-    ax.plot3D(xline, yline, zline, 'red')
+    x = r * np.outer(np.cos(lons), np.cos(lats)).T
+    y = r * np.outer(np.sin(lons), np.cos(lats)).T
+    z = r * np.outer(np.ones(np.size(lons)), np.sin(lats)).T
 
     if simple:
         ax.plot_surface(
@@ -50,6 +37,28 @@ def plot_3d(data, simple, close):
     else:
         ax.plot_surface(
             x, y, z, rstride=1, cstride=1, facecolors=bm, alpha=0.75, linewidth=0)
+
+    ax.set_xlabel("x")
+    ax.set_ylabel("y")
+    ax.set_zlabel("z")
+
+    plt.show(block=False)
+
+    return fig, ax
+
+def plot_3d(ax, data, close):
+    xline = data[:, 0]
+    yline = data[:, 1]
+    zline = data[:, 2]
+
+    if close:
+        index = np.where(data[:-1,:] == data[1:,:])[0]
+        if len(index) != 0:
+            xline = xline[max(0,index[0] - 10000):min(index[0],len(xline))]
+            yline = yline[max(0,index[0] - 10000):min(index[0],len(yline))]
+            zline = zline[max(0,index[0] - 10000):min(index[0],len(zline))]
+
+    ax.plot3D(xline, yline, zline)
 
     if close:
         # Only plot close to Earth
@@ -59,10 +68,6 @@ def plot_3d(data, simple, close):
     else:
         # Plot completely
         axisEqual3D(ax)
-
-    ax.set_xlabel("x")
-    ax.set_ylabel("y")
-    ax.set_zlabel("z")
 
     plt.show(block=False)
 
