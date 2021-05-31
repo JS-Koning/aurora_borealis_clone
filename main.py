@@ -50,7 +50,7 @@ def main():
     y_space = np.linspace(minimum_y,maximum_y,particles_y)
     z_space = np.linspace(minimum_z,maximum_z,particles_z)
     
-    mass, charge = sim.incoming_probabilities(0.95, 0.05 * 0.95, 0.05**2, particles_z*particles_y):
+    mass, charge = sim.incoming_probabilities(0.95, 0.05*0.95, 0.05**2, particles_z*particles_y)
 
     for y in range(len(y_space)):
         for z in range(len(z_space)):
@@ -65,16 +65,11 @@ def main():
             # Initialize particle velocity
             v_init = np.array([np.random.normal((maximum_v+minimum_v)/2,(maximum_v+minimum_v)/10), 0.0, 0.0])
 
-            # Change particles's charge for symmetry
-            charge_factor2 = 1
-            if position_y>= 0:
-                charge_factor2 = -1
-
             # Simulate particle
-            r_data, v_data = sim.simulate(r_init, v_init, charge_factor*charge_factor2, mass_factor, dt, time_steps)
+            r_data, v_data = sim.simulate(r_init, v_init, charge[y*particles_y + z], mass[y*particles_y + z], dt, time_steps)
 
             # Plot particle trajectory
-            if r_data[-1,0]**2 + r_data[-1,1]**2 + r_data[-1,2]**2 < 3**2:
+            if r_data[-1, 0]**2 + r_data[-1, 1]**2 + r_data[-1, 2]**2 < 3**2:
                 # Only plot when end-point is closer to than 3 Earth-radia (ignore deflected particles)
                 utils.plot_3d(ax, r_data, plot_near_earth, plot_points)
 

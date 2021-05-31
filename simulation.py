@@ -84,16 +84,12 @@ def runge_kutta_4(charge, mass, dt, r_particle_last_1, v_particle_last_1):
     return r_particle, v_particle
 
 
-def simulate(r_particle_init, v_particle_init, charge_factor, mass_factor, dt, time_steps):
+def simulate(r_particle_init, v_particle_init, charge, mass, dt, time_steps):
     # Initialize
-    print("Simulating single particle with [m =", mass_factor, "* proton mass, q =", charge_factor,
-          "* elementary charge] using Runge-Kutta-4 Algorithm...")
+    print("Simulating single particle with [m =", mass, " q =", charge,
+          " using Runge-Kutta-4 Algorithm...")
     r_particle = np.zeros((time_steps, 3))
     v_particle = np.zeros((time_steps, 3))
-
-    # Charged particle
-    m = mass_factor * m_electron
-    q = charge_factor * -q_charge
 
     # Initial condition
     r_particle[0, :] = r_particle_init / r_earth # now in m (only vary y,z => grid)
@@ -106,7 +102,7 @@ def simulate(r_particle_init, v_particle_init, charge_factor, mass_factor, dt, t
             print("Progress:", ("%.2f" % ((i+1) / time_steps * 100)), "%...")
 
         # Runge-Kutta-4 algorithm
-        r_particle[i, :], v_particle[i, :] = runge_kutta_4(q, m, dt, r_particle[i-1, :], v_particle[i-1, :])
+        r_particle[i, :], v_particle[i, :] = runge_kutta_4(charge, mass, dt, r_particle[i-1, :], v_particle[i-1, :])
 
         # Stop if at closest point
         if r_particle[i, 0]**2 + r_particle[i, 1]**2 + r_particle[i, 2]**2 > r_particle[i-1, 0]**2 +\
@@ -120,7 +116,7 @@ def simulate(r_particle_init, v_particle_init, charge_factor, mass_factor, dt, t
 def incoming_probabilities(p_electron, p_proton, p_alpha, partnums):
 
     masses = np.array([m_electron, m_proton, 4*m_proton])
-    charges = np.array([-1, 1, 4])
+    charges = np.array([-1, 1, 2]) *q_charge
     
     rands = np.random.rand(partnums)
     masses_arr = np.zeros(partnums)
