@@ -115,3 +115,24 @@ def simulate(r_particle_init, v_particle_init, charge_factor, mass_factor, dt, t
             v_particle[i, :] = v_particle[i-1, :]
 
     return r_particle, v_particle
+
+
+def incoming_probabilities(p_electron, p_proton, p_alpha, partnums):
+
+    masses = np.array([m_electron, m_proton, 4*m_proton])
+    charges = np.array([-1, 1, 4])
+    
+    rands = np.random.rand(partnums)
+    masses_arr = np.zeros(partnums)
+    charges_arr = np.zeros(partnums)
+    for i in range(len(masses_arr)):
+        if rands[i] < p_proton:
+            masses_arr[i] = masses[1]
+            charges_arr[i] = charges[1]
+        elif rands[i] > 1-p_alpha:
+            masses_arr[i] = masses[2]
+            charges_arr[i] = charges[2]
+        else:
+            masses_arr[i] = masses[0]
+            charges_arr[i] = charges[0]
+    return masses_arr, charges_arr

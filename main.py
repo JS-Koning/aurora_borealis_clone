@@ -2,6 +2,9 @@ import numpy as np
 import simulation as sim
 import utilities as utils
 import matplotlib.pyplot as plt
+import timeit
+
+time_start = timeit.default_timer()
 
 # Seed for reproducibility
 seed = 420
@@ -22,11 +25,11 @@ charge_factor = 2.0
 # Initial positions grid [m]
 position_x = -1E10
 
-particles_y = 20
+particles_y = 5
 minimum_y = -1E8
 maximum_y = 1E8
 
-particles_z = 20
+particles_z = 5
 minimum_z = -1E8
 maximum_z = 1E8
 
@@ -46,6 +49,8 @@ def main():
 
     y_space = np.linspace(minimum_y,maximum_y,particles_y)
     z_space = np.linspace(minimum_z,maximum_z,particles_z)
+    
+    mass, charge = sim.incoming_probabilities(0.95, 0.05 * 0.95, 0.05**2, particles_z*particles_y):
 
     for y in range(len(y_space)):
         for z in range(len(z_space)):
@@ -78,6 +83,9 @@ def main():
 
 r, v = main()
 
+time_elapsed = (timeit.default_timer() - time_start)
+print(time_elapsed)
+
 r_i = r[0, :]
 r_e = r[-1, :]
 rr = r_e-r_i
@@ -91,6 +99,5 @@ inx = utils.find_nearest(r, 1)
 print(r[inx-1, :])
 print(r[inx,:])
 print(r[inx+1, :])
-
 
 
