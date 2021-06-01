@@ -74,9 +74,13 @@ def plot_3d(ax, data, close, points):
     if close:
         index = np.where(data[:-1,:] == data[1:,:])[0]
         if len(index) != 0:
-            xline = xline[max(0,index[0] - points):min(index[0],len(xline))]
-            yline = yline[max(0,index[0] - points):min(index[0],len(yline))]
-            zline = zline[max(0,index[0] - points):min(index[0],len(zline))]
+            xline = xline[max(0,index[3] - points):min(index[3],len(xline)-1)]
+            yline = yline[max(0,index[3] - points):min(index[3],len(yline)-1)]
+            zline = zline[max(0,index[3] - points):min(index[3],len(zline)-1)]
+        else:
+            xline = xline[len(xline)-1-points:len(xline)-1]
+            yline = yline[len(yline) - 1 - points:len(yline) - 1]
+            zline = zline[len(zline) - 1 - points:len(zline) - 1]
 
     ax.plot3D(xline, yline, zline)
 

@@ -25,11 +25,11 @@ charge_factor = 1.0
 # Initial positions grid [m]
 position_x = -5E8
 
-particles_y = 100
+particles_y = 3
 minimum_y = -1E8
 maximum_y = 1E8
 
-particles_z = 100
+particles_z = 3
 minimum_z = -1E8
 maximum_z = 1E8
 
@@ -41,9 +41,10 @@ maximum_v = 7.5e5
 # Plot settings
 plot_simple = False
 plot_near_earth = True
-plot_points = 2000
+plot_points = round(3 * 1E-5/dt)
 
 save_data = True
+save_data_points = plot_points
 
 def main():
     # Plot Earth
@@ -57,8 +58,8 @@ def main():
     # mass, charge = sim.incoming_probabilities(0.95, 0.05*0.95, 0.05**2, particles_z*particles_y)
 
     for y in range(len(y_space)):
-        particles_r = np.zeros((particles_z, time_steps, 3))
-        particles_v = np.zeros((particles_z, time_steps, 3))
+        particles_r = np.zeros((particles_z, save_data_points, 3))
+        particles_v = np.zeros((particles_z, save_data_points, 3))
 
         for z in range(len(z_space)):
             print("Simulating particle:", y*particles_y + z + 1, "out of", particles_y*particles_z)
@@ -80,8 +81,17 @@ def main():
             # Simulate particle
             r_data, v_data = sim.simulate(r_init, v_init, charge_factor*charge_factor2, mass_factor, dt, time_steps)
 
-            particles_r[z, :, :] = r_data
-            particles_v[z, :, :] = v_data
+            index = np.where(r_data[:-1, :] == r_data[1:, :])[0]
+
+            if len(index) != 0:
+                r_save_data = r_data[max(0, index[3] - save_data_points):min(index[3], len(r_data) - 1), :]
+                v_save_data = v_data[max(0, index[3] - save_data_points):min(index[3], len(v_data) - 1), :]
+            else:
+                r_save_data = r_data[len(r_data) - 1 - save_data_points:len(r_data) - 1, :]
+                v_save_data = v_data[len(v_data) - 1 - save_data_points:len(v_data) - 1, :]
+
+            particles_r[z, :, :] = r_save_data
+            particles_v[z, :, :] = v_save_data
 
             # Plot particle trajectory
             if r_data[-1, 0]**2 + r_data[-1, 1]**2 + r_data[-1, 2]**2 < 3**2:
@@ -89,7 +99,7 @@ def main():
                 utils.plot_3d(ax, r_data, plot_near_earth, plot_points)
                 pass
 
-            #utils.plot_time_distance(r_data, dt)
+            # utils.plot_time_distance(r_data, dt)
 
         if save_data:
             # Save data for current y
