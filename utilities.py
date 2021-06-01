@@ -131,7 +131,7 @@ def plot_time_distance(distances, dt):
     plt.plot(time_array, distance_abs)
     plt.ylabel('distance [r_earths]')
     plt.xlabel('Time [s]')
-    plt.show()
+    plt.show(block=False)
     return
 
 
