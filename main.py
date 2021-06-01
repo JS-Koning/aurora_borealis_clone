@@ -11,7 +11,7 @@ seed = 420
 np.random.seed(seed)
 
 # Time between each iteration # minimum: 1E-6 | okay: 1E-7 | good: 1E-8 | best: 1E-9
-dt = 1E-8
+dt = 1E-6
 # Total time length [s]
 time = 1E-2
 # Time steps
@@ -25,11 +25,11 @@ charge_factor = 1.0
 # Initial positions grid [m]
 position_x = -1E10
 
-particles_y = 50
+particles_y = 10
 minimum_y = -1E8
 maximum_y = 1E8
 
-particles_z = 50
+particles_z = 10
 minimum_z = -1E8
 maximum_z = 1E8
 
@@ -41,7 +41,7 @@ maximum_v = 7.5e5
 # Plot settings
 plot_simple = False
 plot_near_earth = True
-plot_points = 2000
+plot_points = 20
 
 
 def main():
@@ -51,7 +51,11 @@ def main():
     y_space = np.linspace(minimum_y,maximum_y,particles_y)
     z_space = np.linspace(minimum_z,maximum_z,particles_z)
 
-    mass, charge = sim.incoming_probabilities(0.95, 0.05*0.95, 0.05**2, particles_z*particles_y)
+    # unused since we only simulate electrons/positrons
+    # mass, charge = sim.incoming_probabilities(0.95, 0.05*0.95, 0.05**2, particles_z*particles_y)
+
+    particles_r = np.zeros((particles_z*particles_y, time_steps, 3))
+    particles_v = np.zeros((particles_z*particles_y, time_steps, 3))
 
     for y in range(len(y_space)):
         for z in range(len(z_space)):
@@ -74,18 +78,26 @@ def main():
             # Simulate particle
             r_data, v_data = sim.simulate(r_init, v_init, charge_factor*charge_factor2, mass_factor, dt, time_steps)
 
+            particles_r[y * particles_y + z, :, :] = r_data
+            particles_v[y * particles_y + z, :, :] = v_data
+
             # Plot particle trajectory
             if r_data[-1, 0]**2 + r_data[-1, 1]**2 + r_data[-1, 2]**2 < 3**2:
                 # Only plot when end-point is closer to than 3 Earth-radia (ignore deflected particles)
                 utils.plot_3d(ax, r_data, plot_near_earth, plot_points)
 
-    return r_data, v_data
+        # Save data
+        file_str = 'Datasets/Data_t' + str(time) + 'dt' + str(dt) + 'n' + str(particles_y*particles_z) + ".h5"
+
+        utils.create_datafile(file_str, particles_r, particles_v)
+
+    return particles_r, particles_v
 
 
 r, v = main()
 
 time_elapsed = (timeit.default_timer() - time_start)
-print(time_elapsed)
+print("Runtime:", time_elapsed, "seconds")
 
 r_i = r[0, :]
 r_e = r[-1, :]
@@ -96,9 +108,10 @@ print("Particle moved a distance of: ", distance, "Earth-radius lengths.")
 
 plt.show()
 
-inx = utils.find_nearest(r, 1)
-print(r[inx-1, :])
-print(r[inx,:])
-print(r[inx+1, :])
+# doesn't work..?
+#inx = utils.find_nearest(r, 1)
+#print(r[inx-1, :])
+#print(r[inx,:])
+#print(r[inx+1, :])
 
 

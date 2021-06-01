@@ -2,7 +2,7 @@ from mpl_toolkits import mplot3d
 import numpy as np
 import matplotlib.pyplot as plt
 import PIL
-
+import h5py
 
 def axisEqual3D(ax):
     # A hack to make 3D aspect ratio equal in all axis
@@ -14,6 +14,24 @@ def axisEqual3D(ax):
     for ctr, dim in zip(centers, 'xyz'):
         getattr(ax, 'set_{}lim'.format(dim))(ctr - r, ctr + r)
 
+def rotate(x, y, z):
+    # y - axis rotation https://nl.wikipedia.org/wiki/Rotatiematrix
+    # Earth's axial tilt
+    theta = 23.4365472133 * np.pi / 180.0
+
+    rotation_matrix = np.array(
+        [[np.cos(theta), 0, np.sin(theta)],
+        [0, 1, 0],
+        [-np.sin(theta), 0, np.cos(theta)]]
+    )
+
+    x2 = x * rotation_matrix[0][0] + y * rotation_matrix[0][1] + z * rotation_matrix[0][2]
+    y2 = x * rotation_matrix[1][0] + y * rotation_matrix[1][1] + z * rotation_matrix[1][2]
+    z2 = x * rotation_matrix[2][0] + y * rotation_matrix[2][1] + z * rotation_matrix[2][2]
+
+    return x2, y2, z2
+
+
 def plot_earth(simple):
     fig = plt.figure()
     ax = plt.axes(projection='3d')
@@ -22,14 +40,16 @@ def plot_earth(simple):
     bm = PIL.Image.open('earth.jpg')
     bm = np.array(bm.resize([int(d / 16) for d in bm.size])) / 256
 
+    # radius
     r = 1
-    pi = np.pi
-    # coordinates of the image - don't know if this is entirely accurate, but probably close
+    # spherical wrap
     lons = np.linspace(-180, 180, bm.shape[1]) * np.pi / 180
     lats = np.linspace(-90, 90, bm.shape[0])[::-1] * np.pi / 180
     x = r * np.outer(np.cos(lons), np.cos(lats)).T
     y = r * np.outer(np.sin(lons), np.cos(lats)).T
     z = r * np.outer(np.ones(np.size(lons)), np.sin(lats)).T
+
+    x,y,z = rotate(x,y,z)
 
     if simple:
         ax.plot_surface(
@@ -114,4 +134,61 @@ def plot_time_distance(distances, dt):
     plt.show()
     return
 
+
+def create_datafile(file_name, particles_r, particles_v):
+    """
+        This function creates datasets
+
+        Parameters
+        ----------
+        file_name: str
+            File name for new dataset file
+        particles_r: ndarray
+            Position data of particles
+        particles_v: ndarray
+            Velocity data of particles
+
+        Returns
+        -------
+        True: boolean
+            Success
+    """
+
+    hf = h5py.File(file_name, 'w')
+    hf.create_dataset('particles_positions', data=particles_r, compression="gzip")
+    hf.create_dataset('particles_velocities', data=particles_v, compression="gzip")
+    hf.close()
+
+
+def load_datafile(file_name):
+    """
+        This function loads datasets
+
+        Parameters
+        ----------
+        file_name: str
+            File name for new dataset file
+
+        Returns
+        -------
+        particles_r: ndarray
+            Position data of particles
+        particles_v: ndarray
+            Velocity data of particles
+    """
+
+    # read data set(s)
+    # tauarray = np.zeros(len(tau_thingy)) #here dependent on loop created change this
+    hf = h5py.File(file_name, 'r')
+
+    particles_r = hf.get('particles_positions')
+    particles_r = np.array(particles_r)
+
+    particles_v = hf.get('particles_velocities')
+    particles_v = np.array(particles_v)
+
+    hf.close()
+
+    # numpy.append(tauarray, specific_heat, axis=None) #to add it to array created in line 2 of this 'block'
+    return particles_r, particles_v
 
