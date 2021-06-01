@@ -95,6 +95,9 @@ def simulate(r_particle_init, v_particle_init, charge, mass, dt, time_steps):
     r_particle[0, :] = r_particle_init / r_earth # now in m (only vary y,z => grid)
     v_particle[0, :] = v_particle_init # min 250, max 3000 km/s
     #v_particle[0, :], r_particle[0, :],  = utils.initialize_loc_vel(300000, 100, 1, 0)
+
+    mass = m_electron * mass
+    charge = -q_charge * charge
     
     # Simulate using algorithm
     for i in range(1, time_steps):

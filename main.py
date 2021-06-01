@@ -10,8 +10,8 @@ time_start = timeit.default_timer()
 seed = 420
 np.random.seed(seed)
 
-# Time between each iteration # okay: 1E-7 | good: 1E-8 | best: 1E-9
-dt = 1E-7
+# Time between each iteration # minimum: 1E-6 | okay: 1E-7 | good: 1E-8 | best: 1E-9
+dt = 1E-8
 # Total time length [s]
 time = 1E-2
 # Time steps
@@ -20,27 +20,28 @@ time_steps = int(time/dt)
 # Factors to initialize (relativistic) charged particle with
 relativistic = False #  TODO
 mass_factor = 1.0
-charge_factor = 2.0
+charge_factor = 1.0
 
 # Initial positions grid [m]
 position_x = -1E10
 
-particles_y = 5
+particles_y = 50
 minimum_y = -1E8
 maximum_y = 1E8
 
-particles_z = 5
+particles_z = 50
 minimum_z = -1E8
 maximum_z = 1E8
 
 # Initial velocities [m/s]
 minimum_v = 2.5e5
 maximum_v = 3.0e6
+maximum_v = 7.5e5
 
 # Plot settings
 plot_simple = False
 plot_near_earth = True
-plot_points = 20
+plot_points = 2000
 
 
 def main():
@@ -49,7 +50,7 @@ def main():
 
     y_space = np.linspace(minimum_y,maximum_y,particles_y)
     z_space = np.linspace(minimum_z,maximum_z,particles_z)
-    
+
     mass, charge = sim.incoming_probabilities(0.95, 0.05*0.95, 0.05**2, particles_z*particles_y)
 
     for y in range(len(y_space)):
@@ -65,8 +66,13 @@ def main():
             # Initialize particle velocity
             v_init = np.array([np.random.normal((maximum_v+minimum_v)/2,(maximum_v+minimum_v)/10), 0.0, 0.0])
 
+            # Change particles's charge for symmetry
+            charge_factor2 = 1
+            if position_y >= 0:
+                charge_factor2 = -1
+
             # Simulate particle
-            r_data, v_data = sim.simulate(r_init, v_init, charge[y*particles_y + z], mass[y*particles_y + z], dt, time_steps)
+            r_data, v_data = sim.simulate(r_init, v_init, charge_factor*charge_factor2, mass_factor, dt, time_steps)
 
             # Plot particle trajectory
             if r_data[-1, 0]**2 + r_data[-1, 1]**2 + r_data[-1, 2]**2 < 3**2:
