@@ -3,6 +3,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import PIL
 import h5py
+import simulation as sim
 
 def axisEqual3D(ax):
     # A hack to make 3D aspect ratio equal in all axis
@@ -17,7 +18,7 @@ def axisEqual3D(ax):
 def rotate(x, y, z):
     # y - axis rotation https://nl.wikipedia.org/wiki/Rotatiematrix
     # Earth's axial tilt
-    theta = 23.4365472133 * np.pi / 180.0
+    theta = sim.theta
 
     rotation_matrix = np.array(
         [[np.cos(theta), 0, np.sin(theta)],
@@ -66,21 +67,10 @@ def plot_earth(simple):
 
     return fig, ax
 
-def plot_3d(ax, data, close, points):
+def plot_3d(ax, data, close):
     xline = data[:, 0]
     yline = data[:, 1]
     zline = data[:, 2]
-
-    if close:
-        index = np.where(data[:-1,:] == data[1:,:])[0]
-        if len(index) != 0:
-            xline = xline[max(0,index[3] - points):min(index[3],len(xline)-1)]
-            yline = yline[max(0,index[3] - points):min(index[3],len(yline)-1)]
-            zline = zline[max(0,index[3] - points):min(index[3],len(zline)-1)]
-        else:
-            xline = xline[len(xline)-1-points:len(xline)-1]
-            yline = yline[len(yline) - 1 - points:len(yline) - 1]
-            zline = zline[len(zline) - 1 - points:len(zline) - 1]
 
     ax.plot3D(xline, yline, zline)
 

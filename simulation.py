@@ -102,7 +102,7 @@ def simulate(r_particle_init, v_particle_init, charge, mass, dt, time_steps):
     # Simulate using algorithm
     for i in range(1, time_steps):
         if (i+1) % int(time_steps / 10) == 0:
-            print("Progress:", ("%.2f" % ((i+1) / time_steps * 100)), "%...")
+            print("Simulation progress:", ("%.2f" % ((i+1) / time_steps * 100)), "%...")
 
         # Runge-Kutta-4 algorithm
         r_particle[i, :], v_particle[i, :] = runge_kutta_4(charge, mass, dt, r_particle[i-1, :], v_particle[i-1, :])
