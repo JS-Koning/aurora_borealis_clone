@@ -18,8 +18,13 @@ do_data_processing = True
 """Multi-threading settings"""
 # Enable multi-threading
 multi_threading = True
-# Amount of logical processors the current machine has
-threads = psutil.cpu_count(logical=True)
+# Automatically decide amount of threads
+automatic_threads = False
+if automatic_threads:
+    # Amount of logical processors the current machine has
+    threads = psutil.cpu_count(logical=True)
+else:
+    threads = 3
 # Create multi-threading pool with a maximum of number a threads
 executor = thread.ProcessPoolExecutor(threads)
 
@@ -57,11 +62,11 @@ charge_factor = 1.0
 # Initial positions grid [m] ||| Approximately 0.0033 AU (=5E8 m) from Earth center
 position_x = -5E8
 
-particles_y = 100
+particles_y = 150
 minimum_y = -1E8
 maximum_y = 1E8
 
-particles_z = 100
+particles_z = 150
 minimum_z = -1E8
 maximum_z = 1E8
 
