@@ -14,7 +14,7 @@ do_post_processing = True
 do_data_processing = True
 
 """Seed settings"""
-# Seed for reproducibility
+# Seed for reproducibility ||| Guess that's why they call it 'seed'...
 seed = 420
 np.random.seed(seed)
 
@@ -56,9 +56,9 @@ maximum_z = 1E8
 
 """Initial velocity settings"""
 # Initial velocities (uniform distribution) [m/s] ||| https://link.springer.com/article/10.1007/s11207-020-01730-z
-# minimum velocity: 300 km/s [slow solar wind @ 0.9~1.1 AU]
+# minimum velocity: 300 km/s ||| Slow solar wind @ 0.9 ~ 1.1 AU
 minimum_v = 3.0e5
-# maximum velocity: 750 km/s [fast solar wind @ 0.9~1.1 AU]
+# maximum velocity: 750 km/s ||| Fast solar wind @ 0.9 ~ 1.1 AU
 maximum_v = 7.5e5
 
 
@@ -68,14 +68,20 @@ def main():
 
     # Particles trajectory simulation
     if do_simulation:
+        # Begin main particles simulation
+        print("Simulating...")
+
+        # Define grid coordinates for Y- and Z-coordinates
         y_space = np.linspace(minimum_y,maximum_y,particles_y)
         z_space = np.linspace(minimum_z,maximum_z,particles_z)
 
         for y in range(len(y_space)):
+            # Initialize arrays for saving reduced simulation data
             particles_r = np.zeros((particles_z, save_data_points, 3))
             particles_v = np.zeros((particles_z, save_data_points, 3))
 
             for z in range(len(z_space)):
+                # Show progress of full particles simulation
                 print("Simulating particle:", y*particles_y + z + 1, "out of", particles_y*particles_z)
 
                 # Define grid positions
@@ -96,8 +102,10 @@ def main():
                 # Simulate particle
                 r_data, v_data = sim.simulate(r_init, v_init, charge_factor*charge_factor2, mass_factor, dt, time_steps)
 
+                # Find index where simulation ends (choose index[3] to skip first 3 values as a failsafe)
                 index = np.where(r_data[:-1, :] == r_data[1:, :])[0]
 
+                # Reduce simulation data
                 if len(index) != 0:
                     r_save_data = r_data[max(0, index[3] - save_data_points):min(index[3], len(r_data) - 1), :]
                     v_save_data = v_data[max(0, index[3] - save_data_points):min(index[3], len(v_data) - 1), :]
@@ -105,6 +113,7 @@ def main():
                     r_save_data = r_data[len(r_data) - 1 - save_data_points:len(r_data) - 1, :]
                     v_save_data = v_data[len(v_data) - 1 - save_data_points:len(v_data) - 1, :]
 
+                # Prepare reduced simulation data to be saved
                 particles_r[z, :, :] = r_save_data
                 particles_v[z, :, :] = v_save_data
 
@@ -117,6 +126,10 @@ def main():
 
     # Particles absorption processing
     if do_post_processing:
+        # Begin post-processing
+        print("Post-processing...")
+
+        # TODO
         # Load data
         # Filter useful trajectories (within 3-Earth Radius)
         # Trace back trajectories to stop at absorption altitudes
@@ -125,21 +138,29 @@ def main():
 
     # Data-processing for showing results
     if do_data_processing:
+        # Begin data-processing
         print("Data-processing...")
+
         # Plot 3D Earth
         fig, ax = utils.plot_earth(plot_simple)
 
+        # Iterate over Y-grid
         for y in range(particles_y):
+            # Show progress
             if (y+1) % int(particles_y / 10) == 0:
                 print("Loading progress:", ("%.2f" % ((y+1) / particles_y * 100)), "%...")
 
+            # Filename of dataset to load
             file_str = 'Datasets/Data_t' + str(time) + 'dt' + str(dt) + \
                        'n' + str(particles_y * particles_z) + 'y' + str(y) + ".h5"
+
+            # Load dataset
             r_dataset, v_dataset = utils.load_datafile(file_str)
 
+            # Plot relevant trajectories
             for r_data in r_dataset:
                 # Plot particle trajectory
-                if r_data[-1, 0] ** 2 + r_data[-1, 1] ** 2 + r_data[-1, 2] ** 2 < 99 ** 2:
+                if r_data[-1, 0] ** 2 + r_data[-1, 1] ** 2 + r_data[-1, 2] ** 2 < 3 ** 2:
                     # Only plot when end-point is closer to than 3 Earth-radia (ignore deflected particles)
                     utils.plot_3d(ax, r_data, plot_near_earth)
 
@@ -149,7 +170,10 @@ def main():
 
     # Block program from terminating
     plt.show()
-    return time_elapsed
+
+    return True
 
 
-main()
+# Execute main program
+if main():
+    exit()
