@@ -67,6 +67,7 @@ def plot_earth(simple):
 
     return fig, ax
 
+
 def plot_3d(ax, data, close):
     xline = data[:, 0]
     yline = data[:, 1]
@@ -84,6 +85,18 @@ def plot_3d(ax, data, close):
         axisEqual3D(ax)
 
     plt.show(block=False)
+
+
+def custom_space(start, end, num):
+    base = np.linspace(-1.0, 1.0, num=num)
+
+    sign = np.sign(base)
+
+    base = np.power(abs(base), 0.3)
+
+    sign = np.where(sign >= 0, sign*end, -sign*start)
+
+    return base * sign
 
 
 def initialize_loc_vel(init_velocity, distance_earth, offset_y, offset_z):

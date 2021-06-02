@@ -60,6 +60,7 @@ charge_factor = 1.0
 
 """Initial position settings"""
 # Initial positions grid [m] ||| Approximately 0.0033 AU (=5E8 m) from Earth center
+custom_grid = True
 position_x = -5E8
 
 particles_y = 150
@@ -88,8 +89,12 @@ def main():
         print("Simulating...")
 
         # Define grid coordinates for Y- and Z-coordinates
-        y_space = np.linspace(minimum_y, maximum_y, particles_y)
-        z_space = np.linspace(minimum_z, maximum_z, particles_z)
+        if custom_grid:
+            y_space = utils.custom_space(minimum_y, maximum_y, particles_y)
+            z_space = utils.custom_space(minimum_z, maximum_z, particles_z)
+        else:
+            y_space = np.linspace(minimum_y, maximum_y, particles_y)
+            z_space = np.linspace(minimum_z, maximum_z, particles_z)
 
         # Define all initial velocities
         v_init_all = np.array([np.random.uniform(minimum_v, maximum_v, particles_y*particles_z)])
