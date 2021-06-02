@@ -4,14 +4,24 @@ import simulation as sim
 import utilities as utils
 import matplotlib.pyplot as plt
 import timeit
+import concurrent.futures as thread
+import psutil
 
 """Program settings"""
 # Initial trajectory simulation
 do_simulation = False
 # Particle absorption simulation
-do_post_processing = True
+do_post_processing = False
 # Data processing
 do_data_processing = True
+
+"""Multi-threading settings"""
+# Enable multi-threading
+multi_threading = True
+# Amount of logical processors the current machine has
+threads = psutil.cpu_count(logical=True)
+# Create multi-threading pool with a maximum of number a threads
+executor = thread.ProcessPoolExecutor(threads)
 
 """Seed settings"""
 # Seed for reproducibility ||| Guess that's why they call it 'seed'...
@@ -29,6 +39,7 @@ time_steps = int(time/dt)
 """Dataset settings"""
 # Dataset settings
 save_data = True
+save_reduced = True
 save_data_points = round(3 * 1E-5/dt)
 
 """Plot settings"""
@@ -72,17 +83,22 @@ def main():
         print("Simulating...")
 
         # Define grid coordinates for Y- and Z-coordinates
-        y_space = np.linspace(minimum_y,maximum_y,particles_y)
-        z_space = np.linspace(minimum_z,maximum_z,particles_z)
+        y_space = np.linspace(minimum_y, maximum_y, particles_y)
+        z_space = np.linspace(minimum_z, maximum_z, particles_z)
+
+        # Define all initial velocities
+        v_init_all = np.array([np.random.uniform(minimum_v, maximum_v, particles_y*particles_z)])
 
         for y in range(len(y_space)):
             # Initialize arrays for saving reduced simulation data
             particles_r = np.zeros((particles_z, save_data_points, 3))
             particles_v = np.zeros((particles_z, save_data_points, 3))
 
+            futures = []
+
             for z in range(len(z_space)):
                 # Show progress of full particles simulation
-                print("Simulating particle:", y*particles_y + z + 1, "out of", particles_y*particles_z)
+                print("Simulating particle:", y * particles_y + z + 1, "out of", particles_y * particles_z)
 
                 # Define grid positions
                 position_y = y_space[y]
@@ -91,7 +107,7 @@ def main():
                 # Initialize particle position
                 r_init = np.array([position_x, position_y, position_z])
                 # Initialize particle velocity
-                v_init = np.array([np.random.uniform(minimum_v, maximum_v)])
+                v_init = np.array([np.random.uniform(minimum_v, maximum_v), 0.0, 0.0])
 
                 # Change particles' charge for symmetry
                 charge_factor2 = 1
@@ -100,22 +116,21 @@ def main():
                     charge_factor2 = -1
 
                 # Simulate particle
-                r_data, v_data = sim.simulate(r_init, v_init, charge_factor*charge_factor2, mass_factor, dt, time_steps)
-
-                # Find index where simulation ends (choose index[3] to skip first 3 values as a failsafe)
-                index = np.where(r_data[:-1, :] == r_data[1:, :])[0]
-
-                # Reduce simulation data
-                if len(index) != 0:
-                    r_save_data = r_data[max(0, index[3] - save_data_points):min(index[3], len(r_data) - 1), :]
-                    v_save_data = v_data[max(0, index[3] - save_data_points):min(index[3], len(v_data) - 1), :]
+                if multi_threading:
+                    future = executor.submit(sim.simulate, r_init, v_init, charge_factor*charge_factor2, mass_factor, dt, time_steps, save_reduced, save_data_points, z)
+                    futures.append(future)
                 else:
-                    r_save_data = r_data[len(r_data) - 1 - save_data_points:len(r_data) - 1, :]
-                    v_save_data = v_data[len(v_data) - 1 - save_data_points:len(v_data) - 1, :]
+                    r_save_data, v_save_data, z2 = sim.simulate(r_init, v_init, charge_factor*charge_factor2, mass_factor, dt, time_steps, save_reduced, save_data_points, z)
 
-                # Prepare reduced simulation data to be saved
-                particles_r[z, :, :] = r_save_data
-                particles_v[z, :, :] = v_save_data
+                    particles_r[z, :, :] = r_save_data
+                    particles_v[z, :, :] = v_save_data
+
+            if multi_threading:
+                futures, _ = thread.wait(futures)
+                for future in futures:
+                    r_save_data, v_save_data, z = future.result()
+                    particles_r[z, :, :] = r_save_data
+                    particles_v[z, :, :] = v_save_data
 
             # Save simulation data for every y (not all at once to avoid memory issues)
             if save_data:
@@ -160,7 +175,7 @@ def main():
             # Plot relevant trajectories
             for r_data in r_dataset:
                 # Plot particle trajectory
-                if r_data[-1, 0] ** 2 + r_data[-1, 1] ** 2 + r_data[-1, 2] ** 2 < 3 ** 2:
+                if r_data[-1, 0] ** 2 + r_data[-1, 1] ** 2 + r_data[-1, 2] ** 2 < 1.1 ** 2:
                     # Only plot when end-point is closer to than 3 Earth-radia (ignore deflected particles)
                     utils.plot_3d(ax, r_data, plot_near_earth)
 
@@ -175,5 +190,6 @@ def main():
 
 
 # Execute main program
-if main():
-    exit()
+if __name__ == '__main__':
+    if main():
+        exit()

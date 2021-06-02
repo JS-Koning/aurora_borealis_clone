@@ -84,7 +84,7 @@ def runge_kutta_4(charge, mass, dt, r_particle_last_1, v_particle_last_1):
     return r_particle, v_particle
 
 
-def simulate(r_particle_init, v_particle_init, charge, mass, dt, time_steps):
+def simulate(r_particle_init, v_particle_init, charge, mass, dt, time_steps, save_reduced, save_data_points, current_id):
     # Initialize
     print("Simulating single particle with [m =", mass, " q =", charge,
           " using Runge-Kutta-4 Algorithm...")
@@ -113,7 +113,28 @@ def simulate(r_particle_init, v_particle_init, charge, mass, dt, time_steps):
             r_particle[i, :] = r_particle[i-1, :]
             v_particle[i, :] = v_particle[i-1, :]
 
-    return r_particle, v_particle
+    # Find index where simulation ends (choose index[3] to skip first 3 values as a failsafe)
+    index = np.where(r_particle[:-1, :] == r_particle[1:, :])[0]
+
+    if save_reduced:
+        # Reduce simulation data
+        if len(index) != 0:
+            if index[3] >= save_data_points:
+                # Save data until trajectory ends ||| Trajectory ended normally
+                r_save_data = r_particle[max(0, index[3] - save_data_points):min(index[3], len(r_particle) - 1), :]
+                v_save_data = v_particle[max(0, index[3] - save_data_points):min(index[3], len(v_particle) - 1), :]
+            else:
+                # Save data from beginning of simulation ||| Trajectory ended too soon
+                r_save_data = r_particle[0: save_data_points, :]
+                v_save_data = v_particle[0: save_data_points, :]
+        else:
+            # Save data from last part of simulation ||| Trajectory did not end (yet)
+            r_save_data = r_particle[len(r_particle) - 1 - save_data_points:len(r_particle) - 1, :]
+            v_save_data = v_particle[len(v_particle) - 1 - save_data_points:len(v_particle) - 1, :]
+
+        return r_save_data, v_save_data, current_id
+    else:
+        return  r_particle, v_particle, current_id
 
 
 def incoming_probabilities(p_electron, p_proton, p_alpha, partnums):
