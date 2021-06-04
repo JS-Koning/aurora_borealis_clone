@@ -1,0 +1,36 @@
+Grid scaling factor vs relevant particles (for dt=1E-6 & 10000 particles & ending within 3 earth radia)
+Test #1 (basic)
+0.3	167
+0.4	251
+0.5	290
+0.6	290
+0.7	257
+
+Test #2 (optimization 1)
+between 0.5 & 0.6
+0.550	275
+0.525	287
+0.575	285
+
+Test #3 (optimization 2)
+between 0.48 and 0.62
+0.48	291
+0.52	279
+0.54	268
+0.56	283
+0.58	287
+0.62	277
+
+Test #4 (optimization 3)
+around 0.48 and around 0.57
+0.46	276
+0.47	279
+0.49	274
+0.51	284
+0.495	283
+0.485	283
+0.475	285
+0.57	277
+
+Winner: 0.48
+Conclusion: There seem to be 2 optimal solutions, this is probably due to the different poles attracting more particles for each solution.

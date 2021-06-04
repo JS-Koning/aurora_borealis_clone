@@ -1,0 +1,64 @@
+Settings:
+n: 10000 particles (100x100)
+r: relevant: <1.1 R_earth
+dt: 1E-8
+
+Grid scaling: 0.48
+Grid size vs. relevancy:
+5E7	40
+
+Grid scaling: 0.585
+Grid size vs. relevancy:
+2.5E8	1
+1E8	8
+7.5E7	23
+5E7	28
+2.5E7	0
+6E7	26
+4E7	37
+4.5E7	35
+3.5E7	6
+4.2E7	25
+4.8E7	31
+
+Winner: 4.5E7
+
+Grid YZ: 4.5E7
+Grid scale: 0.585
+X position vs. relevancy:
+-5E8	35
+-6E8	38
+-7E8	32
+-4E8	43
+-3E8	37
+-4.5E8	37
+-4.2E8	39
+-3.9E8	43
+
+Winner: -3.9E8
+
+Relevant: <3 R_earth
+dt: 1E-6
+Grid X: -3.9E8
+Grid YZ: 4.5E7
+
+Grid scaling vs. relevancy:
+0.585	453
+0.3	921
+0.2	1160
+0.9	255
+3.0	32
+0.1	1348
+0.05	1375
+0.01	1212
+0.03	1330
+0.06	1387
+0.09	1369
+0.075	1404
+0.072	1390
+0.069	1408
+
+Winner: 0.069
+
+Note1: due to low grid scaling value and low grid YZ, particles will not go to the southpole any more, this is okay since the focus can be put on the north pole particles better.
+Note2: due to low grid scaling value and low grid YZ, particles will not pass the earth and fly back on the other side, this is okay so the focus can be put on direct (sunside) aurora borealis.

@@ -23,11 +23,11 @@ q_charge = 1.602176634E-19
 
 # Earth's magnetic dipole tilt [rad]
 # https://ase.tufts.edu/cosmos/view_picture.asp?id=326#:~:text=.&text=The%20magnetic%20axis%20is%20tilted,by%20the%20solar%20wind%20(Fig.
-phi = 11.70 * np.pi / 180.0
+phi = -11.70 * np.pi / 180.0
 
 # Earth's (mean) obliquity (axial tilt) [rad]
 # https://en.wikipedia.org/wiki/Axial_tilt
-theta = 23.4365472133 * np.pi / 180.0
+theta = -23.4365472133 * np.pi / 180.0
 
 # Earth's magnetic moment [A/m^2]
 # https://www.tulane.edu/~sanelson/eens634/Hmwk6MagneticField.pdf
@@ -84,10 +84,12 @@ def runge_kutta_4(charge, mass, dt, r_particle_last_1, v_particle_last_1):
     return r_particle, v_particle
 
 
-def simulate(r_particle_init, v_particle_init, charge, mass, dt, time_steps, save_reduced, save_data_points, current_id):
+def simulate(r_particle_init, v_particle_init, charge, mass, dt, time_steps, save_reduced, save_data_points, print_simulation_initialization, print_simulation_progress, current_id):
     # Initialize
-    print("Simulating single particle with [m =", mass, " q =", charge,
-          " using Runge-Kutta-4 Algorithm...")
+    if print_simulation_initialization:
+        print("Simulating single particle with [m =", mass, " q =", charge,
+              " using Runge-Kutta-4 Algorithm...")
+
     r_particle = np.zeros((time_steps, 3))
     v_particle = np.zeros((time_steps, 3))
 
@@ -101,7 +103,7 @@ def simulate(r_particle_init, v_particle_init, charge, mass, dt, time_steps, sav
     
     # Simulate using algorithm
     for i in range(1, time_steps):
-        if (i+1) % int(time_steps / 10) == 0:
+        if print_simulation_progress and (i+1) % int(time_steps / 10) == 0:
             print("Simulation progress:", ("%.2f" % ((i+1) / time_steps * 100)), "%...")
 
         # Runge-Kutta-4 algorithm
@@ -109,7 +111,7 @@ def simulate(r_particle_init, v_particle_init, charge, mass, dt, time_steps, sav
 
         # Stop if at closest point
         if r_particle[i, 0]**2 + r_particle[i, 1]**2 + r_particle[i, 2]**2 > r_particle[i-1, 0]**2 +\
-                                                        r_particle[i-1, 1]**2 + r_particle[i-1, 2]**2:
+                                                          r_particle[i-1, 1]**2 + r_particle[i-1, 2]**2:
             r_particle[i, :] = r_particle[i-1, :]
             v_particle[i, :] = v_particle[i-1, :]
 

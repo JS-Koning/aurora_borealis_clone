@@ -15,6 +15,10 @@ do_post_processing = False
 # Data processing
 do_data_processing = True
 
+"""Logging settings"""
+print_simulation_progress = False
+print_simulation_initialization = False
+
 """Multi-threading settings"""
 # Enable multi-threading
 multi_threading = True
@@ -24,7 +28,7 @@ if automatic_threads:
     # Amount of logical processors the current machine has
     threads = psutil.cpu_count(logical=True)
 else:
-    threads = 3
+    threads = 4
 # Create multi-threading pool with a maximum of number a threads
 executor = thread.ProcessPoolExecutor(threads)
 
@@ -59,17 +63,21 @@ mass_factor = 1.0
 charge_factor = 1.0
 
 """Initial position settings"""
-# Initial positions grid [m] ||| Approximately 0.0033 AU (=5E8 m) from Earth center
+# Initial positions grid [m]
+# Around 5E7 seems to give most interesting results ||| Custom grid spaces more points in outer grid coordinates
 custom_grid = True
-position_x = -5E8
+# Factor to adjust custom grid (lower is more towards edges, higher is more towards center)
+scaling_factor = 0.069
+# Approximately 0.0026 AU (=3.9E8 m) from Earth center
+position_x = -3.9E8
 
 particles_y = 150
-minimum_y = -1E8
-maximum_y = 1E8
+minimum_y = -4.5E7
+maximum_y = 4.5E7
 
 particles_z = 150
-minimum_z = -1E8
-maximum_z = 1E8
+minimum_z = -4.5E7
+maximum_z = 4.5E7
 
 """Initial velocity settings"""
 # Initial velocities (uniform distribution) [m/s] ||| https://link.springer.com/article/10.1007/s11207-020-01730-z
@@ -90,8 +98,8 @@ def main():
 
         # Define grid coordinates for Y- and Z-coordinates
         if custom_grid:
-            y_space = utils.custom_space(minimum_y, maximum_y, particles_y)
-            z_space = utils.custom_space(minimum_z, maximum_z, particles_z)
+            y_space = utils.custom_space(minimum_y, maximum_y, particles_y, scaling_factor)
+            z_space = utils.custom_space(minimum_z, maximum_z, particles_z, scaling_factor)
         else:
             y_space = np.linspace(minimum_y, maximum_y, particles_y)
             z_space = np.linspace(minimum_z, maximum_z, particles_z)
@@ -104,50 +112,71 @@ def main():
             particles_r = np.zeros((particles_z, save_data_points, 3))
             particles_v = np.zeros((particles_z, save_data_points, 3))
 
-            futures = []
+            success = False
 
-            for z in range(len(z_space)):
-                # Show progress of full particles simulation
-                print("Simulating particle:", y * particles_y + z + 1, "out of", particles_y * particles_z)
+            while not success:
+                global executor
+                futures = []
 
-                # Define grid positions
-                position_y = y_space[y]
-                position_z = z_space[z]
+                for z in range(len(z_space)):
+                    # Show progress of full particles simulation
+                    print("Simulating particle:", y * particles_y + z + 1, "out of", particles_y * particles_z)
 
-                # Initialize particle position
-                r_init = np.array([position_x, position_y, position_z])
-                # Initialize particle velocity
-                v_init = np.array([np.random.uniform(minimum_v, maximum_v), 0.0, 0.0])
+                    # Define grid positions
+                    position_y = y_space[y]
+                    position_z = z_space[z]
 
-                # Change particles' charge for symmetry
-                charge_factor2 = 1
-                if position_y >= 0:
-                    # Positrons instead of electrons
-                    charge_factor2 = -1
+                    # Initialize particle position
+                    r_init = np.array([position_x, position_y, position_z])
+                    # Initialize particle velocity
+                    v_init = np.array([np.random.uniform(minimum_v, maximum_v), 0.0, 0.0])
 
-                # Simulate particle
+                    # Change particles' charge for symmetry
+                    charge_factor2 = 1
+                    if position_y >= 0:
+                        # Positrons instead of electrons
+                        charge_factor2 = -1
+
+                    # Simulate particle
+                    if multi_threading:
+                        # Multi-threaded simulation
+                        future = executor.submit(sim.simulate, r_init, v_init, charge_factor*charge_factor2, mass_factor, dt, time_steps, save_reduced, save_data_points, print_simulation_initialization, print_simulation_progress, z)
+                        futures.append(future)
+                    else:
+                        # Single-threaded simulation
+                        r_save_data, v_save_data, z2 = sim.simulate(r_init, v_init, charge_factor*charge_factor2, mass_factor, dt, time_steps, save_reduced, save_data_points, print_simulation_initialization, print_simulation_progress, z)
+
+                        particles_r[z, :, :] = r_save_data
+                        particles_v[z, :, :] = v_save_data
+
+                        success = True
+
                 if multi_threading:
-                    future = executor.submit(sim.simulate, r_init, v_init, charge_factor*charge_factor2, mass_factor, dt, time_steps, save_reduced, save_data_points, z)
-                    futures.append(future)
-                else:
-                    r_save_data, v_save_data, z2 = sim.simulate(r_init, v_init, charge_factor*charge_factor2, mass_factor, dt, time_steps, save_reduced, save_data_points, z)
+                    # Store multi-threaded simulation results
+                    futures, _ = thread.wait(futures)
+                    failed = False
 
-                    particles_r[z, :, :] = r_save_data
-                    particles_v[z, :, :] = v_save_data
+                    for future in futures:
+                        try:
+                            r_save_data, v_save_data, z = future.result()
+                        except Exception as exc:
+                            # Rerun for this Y in case of failure... (no idea why this happens ||| probably Windows...)
+                            print('Thread generated an exception: %s Retrying...' % exc)
+                            # Create new multi-threading pool because old one is not usable any more
+                            executor = thread.ProcessPoolExecutor(threads)
+                            failed = True
+                        else:
+                            particles_r[z, :, :] = r_save_data
+                            particles_v[z, :, :] = v_save_data
+                    if not failed:
+                        success = True
 
-            if multi_threading:
-                futures, _ = thread.wait(futures)
-                for future in futures:
-                    r_save_data, v_save_data, z = future.result()
-                    particles_r[z, :, :] = r_save_data
-                    particles_v[z, :, :] = v_save_data
-
-            # Save simulation data for every y (not all at once to avoid memory issues)
-            if save_data:
-                # Save data for current y
-                file_str = 'Datasets/Data_t' + str(time) + 'dt' + str(dt) + \
-                           'n' + str(particles_y * particles_z) + 'y' + str(y) + ".h5"
-                utils.create_datafile(file_str, particles_r, particles_v)
+                # Save simulation data for every y (not all at once to avoid memory issues)
+                if save_data and success:
+                    # Save data for current y
+                    file_str = 'Datasets/Data_t' + str(time) + 'dt' + str(dt) + \
+                               'n' + str(particles_y * particles_z) + 'y' + str(y) + ".h5"
+                    utils.create_datafile(file_str, particles_r, particles_v)
 
     # Particles absorption processing
     if do_post_processing:
@@ -169,6 +198,9 @@ def main():
         # Plot 3D Earth
         fig, ax = utils.plot_earth(plot_simple)
 
+        # Keep track of relevant particles
+        relevant_count = 0
+
         # Iterate over Y-grid
         for y in range(particles_y):
             # Show progress
@@ -188,10 +220,14 @@ def main():
                 if r_data[-1, 0] ** 2 + r_data[-1, 1] ** 2 + r_data[-1, 2] ** 2 < 1.1 ** 2:
                     # Only plot when end-point is closer to than 3 Earth-radia (ignore deflected particles)
                     utils.plot_3d(ax, r_data, plot_near_earth)
+                    relevant_count += 1
+        print("Relevant particles: ", relevant_count, "out of", (particles_y*particles_z), "(",
+              (relevant_count/particles_y/particles_z*100), "%)")
 
     # End program timer
     time_elapsed = timeit.default_timer() - time_start
     print("Runtime:", time_elapsed, "seconds")
+    print("Runtime:", time_elapsed / 60.0, "minutes")
 
     # Block program from terminating
     plt.show()
