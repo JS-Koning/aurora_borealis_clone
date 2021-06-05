@@ -6,6 +6,8 @@ import matplotlib.pyplot as plt
 import timeit
 import concurrent.futures as thread
 import psutil
+import os.path
+from os import path
 
 """Program settings"""
 # Initial trajectory simulation
@@ -16,18 +18,19 @@ do_post_processing = False
 do_data_processing = True
 
 """Logging settings"""
-print_simulation_progress = False
+print_simulation_progress = True
 print_simulation_initialization = False
 
 """Multi-threading settings"""
 # Enable multi-threading
 multi_threading = True
 # Automatically decide amount of threads
-automatic_threads = False
+automatic_threads = True
 if automatic_threads:
     # Amount of logical processors the current machine has
     threads = psutil.cpu_count(logical=True)
 else:
+    # Manual amount of threads
     threads = 4
 # Create multi-threading pool with a maximum of number a threads
 executor = thread.ProcessPoolExecutor(threads)
@@ -40,7 +43,7 @@ np.random.seed(seed)
 """Time settings"""
 # Time between each iteration ||| minimum: 1E-6 ||| okay: 1E-7 ||| good: 1E-8 ||| best: 1E-9
 dt = 1E-8
-# Total time length [s]
+# Total time length [s] ||| direct only: at least 1E-3 ||| indirect and direct: at least 5E-1
 time = 1E-3
 # Time steps
 time_steps = int(time/dt)
@@ -55,6 +58,8 @@ save_data_points = round(3 * 1E-5/dt)
 # Plot settings
 plot_simple = False
 plot_near_earth = True
+# Particles ending up in 'region_of_interest' Earth-radia are interesting
+region_of_interest = 1.1
 
 """Particle settings"""
 # Factors to initialize (relativistic) charged particle with
@@ -71,11 +76,11 @@ scaling_factor = 0.069
 # Approximately 0.0026 AU (=3.9E8 m) from Earth center
 position_x = -3.9E8
 
-particles_y = 150
+particles_y = 100
 minimum_y = -4.5E7
 maximum_y = 4.5E7
 
-particles_z = 150
+particles_z = 100
 minimum_z = -4.5E7
 maximum_z = 4.5E7
 
@@ -133,18 +138,18 @@ def main():
 
                     # Change particles' charge for symmetry
                     charge_factor2 = 1
-                    if position_y >= 0:
+                    #if position_y >= 0:
                         # Positrons instead of electrons
-                        charge_factor2 = -1
+                        #charge_factor2 = -1
 
                     # Simulate particle
                     if multi_threading:
                         # Multi-threaded simulation
-                        future = executor.submit(sim.simulate, r_init, v_init, charge_factor*charge_factor2, mass_factor, dt, time_steps, save_reduced, save_data_points, print_simulation_initialization, print_simulation_progress, z)
+                        future = executor.submit(sim.simulate, r_init, v_init, charge_factor*charge_factor2, mass_factor, dt, time_steps, region_of_interest, save_reduced, save_data_points, print_simulation_initialization, print_simulation_progress, z)
                         futures.append(future)
                     else:
                         # Single-threaded simulation
-                        r_save_data, v_save_data, z2 = sim.simulate(r_init, v_init, charge_factor*charge_factor2, mass_factor, dt, time_steps, save_reduced, save_data_points, print_simulation_initialization, print_simulation_progress, z)
+                        r_save_data, v_save_data, z2 = sim.simulate(r_init, v_init, charge_factor*charge_factor2, mass_factor, dt, time_steps, region_of_interest, save_reduced, save_data_points, print_simulation_initialization, print_simulation_progress, z)
 
                         particles_r[z, :, :] = r_save_data
                         particles_v[z, :, :] = v_save_data
@@ -204,23 +209,31 @@ def main():
         # Iterate over Y-grid
         for y in range(particles_y):
             # Show progress
-            if (y+1) % int(particles_y / 10) == 0:
+            if (y+1) % max(1, int(particles_y / 10)) == 0:
                 print("Loading progress:", ("%.2f" % ((y+1) / particles_y * 100)), "%...")
 
             # Filename of dataset to load
             file_str = 'Datasets/Data_t' + str(time) + 'dt' + str(dt) + \
                        'n' + str(particles_y * particles_z) + 'y' + str(y) + ".h5"
 
-            # Load dataset
-            r_dataset, v_dataset = utils.load_datafile(file_str)
+            if path.exists(file_str):
+                # Load dataset
+                r_dataset, v_dataset = utils.load_datafile(file_str)
 
-            # Plot relevant trajectories
-            for r_data in r_dataset:
-                # Plot particle trajectory
-                if r_data[-1, 0] ** 2 + r_data[-1, 1] ** 2 + r_data[-1, 2] ** 2 < 1.1 ** 2:
-                    # Only plot when end-point is closer to than 3 Earth-radia (ignore deflected particles)
-                    utils.plot_3d(ax, r_data, plot_near_earth)
-                    relevant_count += 1
+                # Plot relevant trajectories
+                for data_value in range(len(r_dataset)):
+                    r_data = r_dataset[data_value]
+                    v_data = v_dataset[data_value]
+                    # Plot particle trajectory
+                    if r_data[-1, 0] ** 2 + r_data[-1, 1] ** 2 + r_data[-1, 2] ** 2 < region_of_interest ** 2:
+                        # Only plot when end-point is closer to than 3 Earth-radia (ignore deflected particles)
+                        utils.plot_3d(ax, r_data, plot_near_earth)
+                        # v_abs = np.sqrt(v_data[-1, 0] ** 2 + v_data[-1, 1] ** 2 + v_data[-1, 2] ** 2) / 600000 #eV
+                        # print(v_abs)
+                        relevant_count += 1
+            else:
+                print("File", file_str, "was not found...")
+
         print("Relevant particles: ", relevant_count, "out of", (particles_y*particles_z), "(",
               (relevant_count/particles_y/particles_z*100), "%)")
 

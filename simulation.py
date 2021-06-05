@@ -84,7 +84,7 @@ def runge_kutta_4(charge, mass, dt, r_particle_last_1, v_particle_last_1):
     return r_particle, v_particle
 
 
-def simulate(r_particle_init, v_particle_init, charge, mass, dt, time_steps, save_reduced, save_data_points, print_simulation_initialization, print_simulation_progress, current_id):
+def simulate(r_particle_init, v_particle_init, charge, mass, dt, time_steps, region_of_interest, save_reduced, save_data_points, print_simulation_initialization, print_simulation_progress, current_id):
     # Initialize
     if print_simulation_initialization:
         print("Simulating single particle with [m =", mass, " q =", charge,
@@ -109,14 +109,17 @@ def simulate(r_particle_init, v_particle_init, charge, mass, dt, time_steps, sav
         # Runge-Kutta-4 algorithm
         r_particle[i, :], v_particle[i, :] = runge_kutta_4(charge, mass, dt, r_particle[i-1, :], v_particle[i-1, :])
 
-        # Stop if at closest point
+        # Stop if at closest point and within RoI (Region of Interest)
         if r_particle[i, 0]**2 + r_particle[i, 1]**2 + r_particle[i, 2]**2 > r_particle[i-1, 0]**2 +\
-                                                          r_particle[i-1, 1]**2 + r_particle[i-1, 2]**2:
-            r_particle[i, :] = r_particle[i-1, :]
-            v_particle[i, :] = v_particle[i-1, :]
+                                                          r_particle[i-1, 1]**2 + r_particle[i-1, 2]**2 and r_particle[i, 0]**2 + r_particle[i, 1]**2 + r_particle[i, 2]**2 < region_of_interest**2:
+        #    r_particle[i, :] = r_particle[i-1, :]
+        #    v_particle[i, :] = v_particle[i-1, :]
+            pass
 
     # Find index where simulation ends (choose index[3] to skip first 3 values as a failsafe)
-    index = np.where(r_particle[:-1, :] == r_particle[1:, :])[0]
+    #index = np.where(r_particle[:-1, :] == r_particle[1:, :])[0]
+    r_particle_radial = np.sqrt(r_particle[:,0]**2 + r_particle[:,1]**2 + r_particle[:,2]**2)
+    index = [0, 0, 0, np.argmin(r_particle_radial)]
 
     if save_reduced:
         # Reduce simulation data
