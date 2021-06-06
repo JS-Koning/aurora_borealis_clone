@@ -78,6 +78,8 @@
         - https://ase.tufts.edu/cosmos/view_chapter.asp?id=29&page=1
             - "An energetic charged particle moves around the magnetic fields in a spiral path that becomes more tightly coiled in the stronger magnetic fields close to a magnetic pole. The intense polar fields act like a magnetic mirror, turning the particle around so it moves back toward the other pole."
             - Our particles can get deflected as well (into the Van Allen radiation belt) for longer simulation times
+</br>
+</br>
 2. General progress update
     - Information gathering
         - No positrons (Sun does not emit those as much as electrons)
@@ -134,7 +136,8 @@
     - Optional: We could implement simple relativistic effects
     - Optional: Adaptive Runge-Kutta implementation (too much work for this little time probably)
         - Higher dt steps further away from Earth, lower dt steps closer to Earth
-
+</br>
+</br>
 5. Summary
     - Beta- particles move as expected, starting with a low- to high solar velocity (300km/s-750km/s near-Earth):
     
@@ -152,7 +155,7 @@
     
     - Particles currently are able to go through the surface of the Earth (as the particles are not yet absorbed in the atmosphere); this is expected behaviour without absorption.
     
-    - Simulations have been heavily optimized by using Numpy, Numba and multi-threading/parallelization.
+    - Simulations have been heavily optimized by using Numpy, Numba and multi-threading/parallelization; and it might be possible to extend Numba-fication.
     
     - We generated initial datasets to work with.
     
