@@ -59,7 +59,7 @@ save_data_points = round(3 * 1E-5/dt)
 plot_simple = False
 plot_near_earth = True
 # Particles ending up in 'region_of_interest' Earth-radia are interesting
-region_of_interest = 1.1
+region_of_interest = 1.1  # 640 km approximately
 
 """Particle settings"""
 # Factors to initialize (relativistic) charged particle with
@@ -76,11 +76,11 @@ scaling_factor = 0.069
 # Approximately 0.0026 AU (=3.9E8 m) from Earth center
 position_x = -3.9E8
 
-particles_y = 100
+particles_y = 180
 minimum_y = -4.5E7
 maximum_y = 4.5E7
 
-particles_z = 100
+particles_z = 180
 minimum_z = -4.5E7
 maximum_z = 4.5E7
 
@@ -190,7 +190,7 @@ def main():
 
         # TODO
         # Load data
-        # Filter useful trajectories (within 3-Earth Radius)
+        # Filter useful trajectories (within 1.1-Earth Radius till 1.01-Earth-Radius)
         # Trace back trajectories to stop at absorption altitudes
         # Save differences in data (to get smaller file sizes...)
         pass

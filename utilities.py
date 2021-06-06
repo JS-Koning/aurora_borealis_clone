@@ -185,7 +185,6 @@ def load_datafile(file_name):
     """
 
     # read data set(s)
-    # tauarray = np.zeros(len(tau_thingy)) #here dependent on loop created change this
     hf = h5py.File(file_name, 'r')
 
     particles_r = hf.get('particles_positions')

@@ -139,7 +139,7 @@ def simulate(r_particle_init, v_particle_init, charge, mass, dt, time_steps, reg
 
         return r_save_data, v_save_data, current_id
     else:
-        return  r_particle, v_particle, current_id
+        return r_particle, v_particle, current_id
 
 
 def incoming_probabilities(p_electron, p_proton, p_alpha, partnums):
