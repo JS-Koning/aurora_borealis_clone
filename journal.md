@@ -150,6 +150,8 @@
     
     - We also removed positrons in our simulations so we get one polar cusp per pole (as expected), see top and bottom image for comparison.
     
+    - Particles currently are able to go through the surface of the Earth (as the particles are not yet absorbed in the atmosphere); this is expected behaviour without absorption.
+    
     - Simulations have been heavily optimized by using Numpy, Numba and multi-threading/parallelization.
     
     - We generated initial datasets to work with.
