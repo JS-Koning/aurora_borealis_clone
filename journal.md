@@ -149,6 +149,12 @@
     ![](Images/Figure_24.png)    
     
     - We also removed positrons in our simulations so we get one polar cusp per pole (as expected), see top and bottom image for comparison.
+    
+    - Simulations have been heavily optimized by using Numpy, Numba and multi-threading/parallelization.
+    
+    - We generated initial datasets to work with.
+    
+    - We gathered information to finalize our project coming week.
 </br>
 </br>
 6. Questions
