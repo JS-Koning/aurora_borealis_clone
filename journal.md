@@ -68,7 +68,7 @@
 ## Week 2
 1. Answer on feedback on last week's progress update:
     - I'm confused about some of your remarks: once you say "beta particles behave as expected" and then "beta particles have a bug". What is true?
-        - Both are true; we can see that the beta particles (electrons) follow a spiralling trajectory around magnetic field lines
+        - Both are true; we can see that the beta particles (electrons) follow a spiralling trajectory around magnetic field lines (so they behave as expected)
         - However, the 'bug' is that the particles did not seem to reach the Earth (unstable trajectories) due to the low resolution in time-steps (dt).
         - We fixed this 'bug' by increasing the resolution of time-steps (dt).
         - It was not entirely a 'bug' however, since a lower resolution in time-steps would lead to more unstable trajectories; therefore, these particles would (possibly) never be able to reach close to the Earth.
@@ -149,6 +149,14 @@
     ![](Images/Figure_24.png)    
     
     - We also removed positrons in our simulations so we get one polar cusp per pole (as expected), see top and bottom image for comparison.
+    
+    - Particles currently are able to go through the surface of the Earth (as the particles are not yet absorbed in the atmosphere); this is expected behaviour without absorption.
+    
+    - Simulations have been heavily optimized by using Numpy, Numba and multi-threading/parallelization.
+    
+    - We generated initial datasets to work with.
+    
+    - We gathered information to finalize our project coming week.
 </br>
 </br>
 6. Questions
