@@ -147,6 +147,8 @@
     - Before the particles would go to either the North or South pole, but since we wanted to focus on the North pole only, we adjusted our grid and parameters such to get the following:
     
     ![](Images/Figure_24.png)    
+    
+    - We also removed positrons in our simulations so we get one polar cusp per pole (as expected), see top and bottom image for comparison.
 </br>
 </br>
 6. Questions
