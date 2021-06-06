@@ -71,6 +71,7 @@
         - Both are true; we can see that the beta particles (electrons) follow a spiralling trajectory around magnetic field lines
         - However, the 'bug' is that the particles did not seem to reach the Earth (unstable trajectories) due to the low resolution in time-steps (dt).
         - We fixed this 'bug' by increasing the resolution of time-steps (dt).
+        - It was not entirely a 'bug' however, since a lower resolution in time-steps would lead to more unstable trajectories; therefore, these particles would (possibly) never be able to reach close to the Earth.
     - In general, I would really like to see a more explicit validation. How do you know your trajectories are ok? Can you compare to a paper?
         - https://folk.ntnu.no/anderhja/aurora/aurora.pdf
             - This paper shows similar spiraling trajectories (although our particle' trajectories are not shown in the Van Allen radiation belt but only in the polar cusp(s)).
