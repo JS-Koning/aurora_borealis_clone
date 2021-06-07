@@ -11,11 +11,11 @@ from os import path
 
 """Program settings"""
 # Initial trajectory simulation
-do_simulation = True
+do_simulation = False
 # Particle absorption simulation
-do_post_processing = False
+do_post_processing = True
 # Data processing
-do_data_processing = True
+do_data_processing = False
 
 """Logging settings"""
 print_simulation_progress = True
@@ -50,7 +50,7 @@ time_steps = int(time/dt)
 
 """Dataset settings"""
 # Dataset settings
-save_data = True
+save_data = False
 save_reduced = True
 save_data_points = round(3 * 1E-5/dt)
 
@@ -187,8 +187,9 @@ def main():
     if do_post_processing:
         # Begin post-processing
         print("Post-processing...")
-
-        # TODO
+        savestring = 'testing'
+        utils.save_relevant_data(savestring, 1.1, 1.01, particles_y)
+            
         # Load data
         # Filter useful trajectories (within 1.1-Earth Radius till 1.01-Earth-Radius)
         # Trace back trajectories to stop at absorption altitudes
