@@ -11,7 +11,7 @@ from os import path
 
 """Program settings"""
 # Initial trajectory simulation
-do_simulation = False
+do_simulation = True
 # Particle absorption simulation
 do_post_processing = False
 # Data processing
@@ -110,7 +110,7 @@ def main():
             z_space = np.linspace(minimum_z, maximum_z, particles_z)
 
         # Define all initial velocities
-        v_init_all = np.array([np.random.uniform(minimum_v, maximum_v, particles_y*particles_z)])
+        v_init_all = np.random.uniform(minimum_v, maximum_v, [particles_y, particles_z])
 
         for y in range(len(y_space)):
             # Initialize arrays for saving reduced simulation data
@@ -134,13 +134,13 @@ def main():
                     # Initialize particle position
                     r_init = np.array([position_x, position_y, position_z])
                     # Initialize particle velocity
-                    v_init = np.array([np.random.uniform(minimum_v, maximum_v), 0.0, 0.0])
+                    v_init = np.array([v_init_all[y, z], 0.0, 0.0])
 
                     # Change particles' charge for symmetry
                     charge_factor2 = 1
-                    #if position_y >= 0:
-                        # Positrons instead of electrons
-                        #charge_factor2 = -1
+                    # if position_y >= 0:
+                    # Positrons instead of electrons
+                    # charge_factor2 = -1
 
                     # Simulate particle
                     if multi_threading:
