@@ -34,6 +34,22 @@ def rotate(x, y, z):
 
 
 def plot_earth(simple):
+    """"
+    Creates a sphere for plotting purposes, can either be earth-like or simply a sphere. Written in a way such that
+    trajectories can be added to the plot later on
+
+    Parameters
+    ----------
+    Boolean: True/False
+    If false, gives a normal translucent sphere, if True sphere is replaced by a translucent perfect spherical earth
+
+    Returns
+    -------
+    fig: pyplot
+        saves pyplot figure
+    ax: pyplot
+        pyplot axis, required to add trajectories
+    """
     fig = plt.figure()
     ax = plt.axes(projection='3d')
 
@@ -69,6 +85,23 @@ def plot_earth(simple):
 
 
 def plot_3d(ax, data, close):
+    """"
+    Creates a plot with 3d line-like data to create trajectories for the particles. adds cutoff parameters to delete
+    data in the plot that is not usable in most cases. Can be used in combination with utilities.plot_earth
+
+    Parameters
+    ----------
+    ax: Pyplot
+        Axis data for pyplot figures
+    data: np.ndarray
+        Data that is to be plotted, makes line plots if this data
+    close: Boolean
+        Plots only near earth trajectories if True, if False plots full trajectories
+    Returns
+    -------
+    None
+
+    """
     xline = data[:, 0]
     yline = data[:, 1]
     zline = data[:, 2]
