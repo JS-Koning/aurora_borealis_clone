@@ -11,7 +11,7 @@ from os import path
 
 """Program settings"""
 # Initial trajectory simulation
-do_simulation = True
+do_simulation = False
 # Particle absorption simulation
 do_post_processing = False
 # Data processing
@@ -57,6 +57,12 @@ save_data_points = round(3 * 1E-5/dt)
 """Plot settings"""
 # Plot settings
 plot_simple = False
+# Resolution of Earth texture ||| Multiple of 2 up until 1024
+plot_earth_resolution = 1024
+# Resolution of Earth texture ||| Multiple of 2 up until 1024
+animation_earth_resolution = 1024
+show_animation = False
+save_animation = False
 plot_near_earth = True
 # Particles ending up in 'region_of_interest' Earth-radia are interesting
 region_of_interest = 1.1  # 640 km approximately
@@ -200,11 +206,13 @@ def main():
         # Begin data-processing
         print("Data-processing...")
 
-        # Plot 3D Earth
-        fig, ax = utils.plot_earth(plot_simple)
+        # Plot 3D Earth for static 3D plot
+        fig, ax = utils.plot_earth(plot_simple, plot_earth_resolution)
 
-        # Keep track of relevant particles
+        # Keep track of relevant particles amount
         relevant_count = 0
+        # Keep track of relevant particles' grid coordinates
+        relevant_xy = []
 
         # Iterate over Y-grid
         for y in range(particles_y):
@@ -216,26 +224,55 @@ def main():
             file_str = 'Datasets/Data_t' + str(time) + 'dt' + str(dt) + \
                        'n' + str(particles_y * particles_z) + 'y' + str(y) + ".h5"
 
+            # Only load if dataset file exists
             if path.exists(file_str):
                 # Load dataset
                 r_dataset, v_dataset = utils.load_datafile(file_str)
 
                 # Plot relevant trajectories
-                for data_value in range(len(r_dataset)):
-                    r_data = r_dataset[data_value]
-                    v_data = v_dataset[data_value]
+                for z in range(len(r_dataset)):
+                    r_data = r_dataset[z]
+                    v_data = v_dataset[z]
                     # Plot particle trajectory
                     if r_data[-1, 0] ** 2 + r_data[-1, 1] ** 2 + r_data[-1, 2] ** 2 < region_of_interest ** 2:
                         # Only plot when end-point is closer to than 3 Earth-radia (ignore deflected particles)
                         utils.plot_3d(ax, r_data, plot_near_earth)
-                        # v_abs = np.sqrt(v_data[-1, 0] ** 2 + v_data[-1, 1] ** 2 + v_data[-1, 2] ** 2) / 600000 #eV
-                        # print(v_abs)
+                        # Add count of amount of relevant particles
                         relevant_count += 1
+                        # Store Y- and Z-grid-coordinates
+                        relevant_xy.append([y, z])
             else:
                 print("File", file_str, "was not found...")
 
         print("Relevant particles: ", relevant_count, "out of", (particles_y*particles_z), "(",
               (relevant_count/particles_y/particles_z*100), "%)")
+
+        # Initialize relevant particles array
+        r_relevant = np.zeros([relevant_count, save_data_points, 3])
+
+        # Retrieve relevant particles only from all particles
+        for relevant_particle in range(relevant_count):
+            # Retrieve Y- and Z-grid-coordinates
+            y, z = relevant_xy[relevant_particle]
+            # File-name of dataset to load
+            file_str = 'Datasets/Data_t' + str(time) + 'dt' + str(dt) + \
+                       'n' + str(particles_y * particles_z) + 'y' + str(y) + ".h5"
+            # Load dataset using Y-grid-coordinate
+            r_dataset, v_dataset = utils.load_datafile(file_str)
+            # Load data using Z-grid-coordinate
+            r_relevant[relevant_particle, :, :] = r_dataset[z]
+
+        if show_animation:
+            # Plot 3D Earth for animation
+            fig, ax = utils.plot_earth(plot_simple, animation_earth_resolution)
+            # Plot 3D particle trajectories with trail
+            ani = utils.plot_3d_animation(fig, ax, r_relevant, plot_near_earth)
+            if save_animation:
+                # Define file name for animation
+                file_str = 'Images/Animation_t' + str(time) + 'dt' + str(dt) + \
+                       'n' + str(particles_y * particles_z) + ".gif"
+                # Save animation
+                utils.save_animation(file_str, ani)
 
     # End program timer
     time_elapsed = timeit.default_timer() - time_start
