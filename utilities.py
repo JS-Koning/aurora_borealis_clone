@@ -200,6 +200,34 @@ def create_datafile(file_name, particles_r, particles_v):
     hf.close()
 
 
+def create_datafile_3(file_name, particles_r, particles_v, indices):
+    """
+        This function creates datasets
+
+        Parameters
+        ----------
+        file_name: str
+            File name for new dataset file
+        particles_r: ndarray
+            Position data of particles
+        particles_v: ndarray
+            Velocity data of particles
+        indices: ndarray
+            indices to be saved
+
+        Returns
+        -------
+        True: boolean
+            Success
+    """
+
+    hf = h5py.File(file_name, 'w')
+    hf.create_dataset('particles_positions', data=particles_r, compression="gzip")
+    hf.create_dataset('particles_velocities', data=particles_v, compression="gzip")
+    hf.create_dataset('indices_in_cutoffs', data=indices, compression="gzip")
+    hf.close()
+
+
 def load_datafile(file_name):
     """
         This function loads datasets
