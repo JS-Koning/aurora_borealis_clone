@@ -4,6 +4,7 @@ import matplotlib.pyplot as plt
 import PIL
 import h5py
 import simulation as sim
+from matplotlib import animation, rc
 
 def axisEqual3D(ax):
     # A hack to make 3D aspect ratio equal in all axis
@@ -33,7 +34,7 @@ def rotate(x, y, z):
     return x2, y2, z2
 
 
-def plot_earth(simple):
+def plot_earth(simple, resolution):
     """"
     Creates a sphere for plotting purposes, can either be earth-like or simply a sphere. Written in a way such that
     trajectories can be added to the plot later on
@@ -53,9 +54,11 @@ def plot_earth(simple):
     fig = plt.figure()
     ax = plt.axes(projection='3d')
 
+    resolution = 1024 / resolution
+
     # Create a sphere
     bm = PIL.Image.open('earth.jpg')
-    bm = np.array(bm.resize([int(d / 16) for d in bm.size])) / 256
+    bm = np.array(bm.resize([int(d / resolution) for d in bm.size])) / 256
 
     # radius
     r = 1
@@ -118,6 +121,73 @@ def plot_3d(ax, data, close):
         axisEqual3D(ax)
 
     plt.show(block=False)
+
+
+def plot_3d_animation(fig, ax, data, close):
+    # choose a different color for each trajectory
+    colors = plt.cm.jet(np.linspace(0, len(data)/8, len(data)) % 1.0)
+    # set up trajectory lines
+    lines = sum([ax.plot([], [], [], '-', linewidth=0.3, c=c) for c in colors], [])
+    # set up points
+    pts = sum([ax.plot([], [], [], 'o', markersize=0.45, c=c) for c in colors], [])
+
+    # set point-of-view: specified by (altitude degrees, azimuth degrees)
+    ax.view_init(30, 0)
+    # initialization function: plot the background of each frame
+
+    def init():
+        for line, pt in zip(lines, pts):
+            # trajectory lines
+            line.set_data([], [])
+            #line.set_3d_properties([])
+            # points
+            pt.set_data([], [])
+            #pt.set_3d_properties([])
+        return lines + pts
+
+    frame_count = 300
+
+    # animation function.  This will be called sequentially with the frame number
+    def animate(i):
+        # we'll step two time-steps per frame.  This leads to nice results.
+        time_steps = data.shape[1]
+        #i = (5 * i) % data.shape[1]
+        i = int(7*time_steps/8 + int((i+1) / frame_count * time_steps/8))
+
+        for line, pt, xi in zip(lines, pts, data):
+            x, y, z = xi[max(0, int(i-time_steps/40)):i].T
+            # trajectory lines
+            line.set_data(x, y)
+            line.set_3d_properties(z)
+            # points
+            pt.set_data(x[-1:], y[-1:])
+            pt.set_3d_properties(z[-1:])
+            # stick lines
+            # stick_line.set_data(xx,zz)
+            # stick_line.set_3d_properties(yy)
+        ax.view_init(30, (i+1)*90/frame_count)
+        fig.canvas.draw()
+        return lines + pts
+
+    if close:
+        # Only plot close to Earth
+        plot_size = 0.75
+        ax.axes.set_xlim3d(left=-1.5*plot_size, right=0.5*plot_size)
+        ax.axes.set_ylim3d(bottom=-plot_size, top=plot_size)
+        ax.axes.set_zlim3d(bottom=-plot_size, top=plot_size)
+    else:
+        # Plot completely
+        axisEqual3D(ax)
+
+    ani = animation.FuncAnimation(fig, animate, init_func=init, frames=frame_count, interval=30, blit=True)
+    plt.show(block=False)
+
+    return ani
+
+
+def save_animation(file_name, ani):
+    ani.save(file_name, writer='imagemagick', fps=30)
+    return True
 
 
 def custom_space(start, end, num, scaling):
