@@ -25,9 +25,9 @@ This project is the final project of Computational Physics which is a course giv
 
 ---
 
-Project team partner #1: Abi Kanagaratnam
+Project team partner 1: Abi Kanagaratnam
 
-Project team partner #2: Jim Koning
+Project team partner 2: Jim Koning
 
 
 Start of project: 24 May 2021
