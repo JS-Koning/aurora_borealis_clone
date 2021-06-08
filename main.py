@@ -13,11 +13,14 @@ from os import path
 # Initial trajectory simulation
 do_simulation = False
 # Particle absorption simulation
+
 do_post_processing = True
 do_save_stripped_data = False
 do_load_stripped_data = True
+do_post_processing = False
+
 # Data processing
-do_data_processing = False
+do_data_processing = True
 
 """Logging settings"""
 print_simulation_progress = True
@@ -60,18 +63,19 @@ save_data_points = round(3 * 1E-5/dt)
 # Plot settings
 plot_simple = False
 # Resolution of Earth texture ||| Multiple of 2 up until 1024
-plot_earth_resolution = 1024
+plot_earth_resolution = 64
 # Resolution of Earth texture ||| Multiple of 2 up until 1024
-animation_earth_resolution = 1024
-show_animation = False
-save_animation = False
+animation_earth_resolution = 64
+show_animation = True
+save_animation = True
 plot_near_earth = True
 # Particles ending up in 'region_of_interest' Earth-radia are interesting
-region_of_interest = 1.1  # 640 km approximately
+region_of_interest = 3.0  # 640 km approximately
 
 """Particle settings"""
 # Factors to initialize (relativistic) charged particle with
 relativistic = False
+simulate_anti_particles = False
 mass_factor = 1.0
 charge_factor = 1.0
 
@@ -111,9 +115,11 @@ def main():
 
         # Define grid coordinates for Y- and Z-coordinates
         if custom_grid:
+            # Use custom spaced grid
             y_space = utils.custom_space(minimum_y, maximum_y, particles_y, scaling_factor)
             z_space = utils.custom_space(minimum_z, maximum_z, particles_z, scaling_factor)
         else:
+            # Use linearly spaced grid
             y_space = np.linspace(minimum_y, maximum_y, particles_y)
             z_space = np.linspace(minimum_z, maximum_z, particles_z)
 
@@ -125,10 +131,14 @@ def main():
             particles_r = np.zeros((particles_z, save_data_points, 3))
             particles_v = np.zeros((particles_z, save_data_points, 3))
 
+            # Whether the simulation over all Z-grid-coordinates for current Y-grid-coordinate was successful
             success = False
 
+            # Keep retrying if simulation fails
             while not success:
+                # Reference to multi-threading executor
                 global executor
+                # Storage for threads and their results
                 futures = []
 
                 for z in range(len(z_space)):
@@ -146,9 +156,10 @@ def main():
 
                     # Change particles' charge for symmetry
                     charge_factor2 = 1
-                    # if position_y >= 0:
-                    # Positrons instead of electrons
-                    # charge_factor2 = -1
+                    if simulate_anti_particles:
+                        if position_y >= 0:
+                            # Positrons instead of electrons
+                            charge_factor2 = -1
 
                     # Simulate particle
                     if multi_threading:
