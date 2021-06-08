@@ -165,7 +165,7 @@ def plot_3d_animation(fig, ax, data, close):
             # stick lines
             # stick_line.set_data(xx,zz)
             # stick_line.set_3d_properties(yy)
-        ax.view_init(30, (i+1)*90/frame_count)
+        ax.view_init(30, (i+1)*360/frame_count)
         fig.canvas.draw()
         return lines + pts
 
