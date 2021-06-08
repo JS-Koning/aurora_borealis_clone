@@ -14,6 +14,8 @@ from os import path
 do_simulation = False
 # Particle absorption simulation
 do_post_processing = True
+do_save_stripped_data = False
+do_load_stripped_data = True
 # Data processing
 do_data_processing = False
 
@@ -193,13 +195,25 @@ def main():
     if do_post_processing:
         # Begin post-processing
         print("Post-processing...")
-        savestring = 'testing'
-        utils.save_relevant_data(savestring, 1.1, 1.01, particles_y)
+        savestring = 'relevant_data'
+
+        
+        cutoff_high = 1.1
+        cutoff_low = 1.01
+        
+        if do_save_stripped_data:
+            utils.save_relevant_data(savestring, cutoff_high, cutoff_low, particles_y)
+        
+        elif do_load_stripped_data:
+            part_r, part_v, indices = utils.load_relevant_data(savestring, cutoff_high, cutoff_low, particles_y)
+
             
         # Load data
         # Filter useful trajectories (within 1.1-Earth Radius till 1.01-Earth-Radius)
         # Trace back trajectories to stop at absorption altitudes
         # Save differences in data (to get smaller file sizes...)
+        else:
+            pass
         pass
 
     # Data-processing for showing results
@@ -284,7 +298,6 @@ def main():
     plt.show()
 
     return True
-
 
 # Execute main program
 if __name__ == '__main__':

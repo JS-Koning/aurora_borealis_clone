@@ -398,3 +398,46 @@ def save_relevant_data(savestring, cutoff_high, cutoff_low, particles_y):
     #print(save_usefull_indices)
     print('shape of the indices array found = '+ str(save_usefull_indices.shape))
     return # save_particles_stripped_r, save_particles_stripped_v, save_usefull_indices
+
+
+def load_relevant_data(file_name, cutoff_high, cutoff_low, particles_y):
+    """
+    This function loads datasets
+
+    Parameters
+    ----------
+    file_name: str
+        File name for new dataset file
+    cutoff_high, cutoff_low: float
+        used to find file of the required dataset
+    particles_y: int
+        used to find file of the required dataset.
+
+    Returns
+    -------
+    particles_r: ndarray
+        Position data of particles
+    particles_v: ndarray
+        Velocity data of particles
+    indices:
+        cutoff indices of relevant data
+    """
+
+    save_string = 'Datasets/stripped_' + file_name + str(cutoff_low) + '_' + str(cutoff_high) + '.h5'
+    
+    # read data set(s)
+    hf = h5py.File(save_string, 'r')
+
+    particles_r = hf.get('particles_positions')
+    particles_r = np.array(particles_r)
+
+    particles_v = hf.get('particles_velocities')
+    particles_v = np.array(particles_v)
+    
+    indices = hf.get('indices_in_cutoffs')
+    indices = np.array(indices)
+
+    hf.close()
+
+    # numpy.append(tauarray, specific_heat, axis=None) #to add it to array created in line 2 of this 'block'
+    return particles_r, particles_v, indices
