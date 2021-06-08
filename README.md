@@ -1,5 +1,14 @@
 # Project 3
 
+Simulation of Aurora Borealis
+
+This program consists of three-parts:
+- Particle movement simulation
+- Particle absorption simulation
+- Data analysis and data results
+
+This project is the final project of Computational Physics which is a course given for the Master's Degree for Applied Physics at Delft University of Technology. Our final project is a physics-related problem; which can be used for studying the trajectories of charged particles (from the Solar wind), for studying the Aurora Borealis phenomena (which could be used to Aurora Borealis hunting and predicting) and for applying the Aurora Borealis phenomena in graphical simulations (such as (space) rocket simulations, flight simulations and games).
+
 For the final project of Computational Physics we encourage you to define your
 own project!
 
