@@ -216,6 +216,21 @@ def main():
         
         elif do_load_stripped_data:
             part_r, part_v, indices = utils.load_relevant_data(savestring, cutoff_high, cutoff_low, particles_y)
+            #print(indices[:, 1])
+            lenind = indices[:, 1] - indices[:, 0]
+            indices = indices.astype(int)
+            #xarr = arange(np.max(lenind))
+            distances = np.linalg.norm(part_r, axis=2)
+            print(indices[0, 0])
+            velocities = np.linalg.norm(part_v, axis=2)
+
+            
+            for i in range(len(distances[:, 0])):
+                plt.plot(distances[i, indices[i, 0]: indices[i, 1]])
+            plt.show()
+            for i in range(len(distances[:, 0])):
+                plt.plot(velocities[i, indices[i, 0]: indices[i, 1]])
+            plt.show()
 
             
         # Load data

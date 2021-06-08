@@ -364,7 +364,7 @@ def save_relevant_data(savestring, cutoff_high, cutoff_low, particles_y):
         particles_r, particles_v = load_datafile(filestr)
 
         distances = np.linalg.norm(particles_r, axis=2)
-        velocities = np.linalg.norm(particles_r, axis=2)
+        velocities = np.linalg.norm(particles_v, axis=2)
 
         mins = distances.min(axis=1)
         usefull_indices = np.where(mins < earth_distance)
@@ -441,3 +441,11 @@ def load_relevant_data(file_name, cutoff_high, cutoff_low, particles_y):
 
     # numpy.append(tauarray, specific_heat, axis=None) #to add it to array created in line 2 of this 'block'
     return particles_r, particles_v, indices
+
+
+def plot_testing(particles_r, particles_v, indices):
+    distances = np.linalg.norm(particles_r, axis=2)
+    velocities = np.linalg.norm(particles_v, axis=2)
+    for i in range(len(particles_r[:,0])):
+        
+        plt.plot()
