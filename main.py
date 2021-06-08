@@ -217,6 +217,16 @@ def main():
         elif do_load_stripped_data:
             part_r, part_v, indices = utils.load_relevant_data(savestring, cutoff_high, cutoff_low, particles_y)
 
+        # Plot 3D Earth
+        fig, ax = utils.plot_earth(plot_simple, plot_earth_resolution)
+        # Plot relevant trajectories
+        for z in range(len(part_r)):
+            r_data = part_r[z]
+            v_data = part_r[z]
+            # Plot particle trajectory
+            if r_data[-1, 0] ** 2 + r_data[-1, 1] ** 2 + r_data[-1, 2] ** 2 < region_of_interest ** 2:
+                # Only plot when end-point is closer to than 3 Earth-radia (ignore deflected particles)
+                utils.plot_3d(ax, r_data, plot_near_earth)
             
         # Load data
         # Filter useful trajectories (within 1.1-Earth Radius till 1.01-Earth-Radius)
