@@ -17,10 +17,9 @@ do_simulation = False
 do_post_processing = True
 do_save_stripped_data = False
 do_load_stripped_data = True
-do_post_processing = False
 
 # Data processing
-do_data_processing = True
+do_data_processing = False
 
 """Logging settings"""
 print_simulation_progress = True
