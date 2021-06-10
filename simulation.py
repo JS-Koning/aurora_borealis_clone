@@ -85,7 +85,7 @@ def runge_kutta_4(charge, mass, dt, r_particle_last_1, v_particle_last_1):
 
 
 @jit(nopython=True)
-def simulate(r_particle_init, v_particle_init, charge, mass, dt, time_steps, van_allen_belt, velocity_factor, save_reduced, save_data_points, print_simulation_initialization, print_simulation_progress, current_id):
+def simulate(r_particle_init, v_particle_init, charge, mass, dt, time_steps, acceleration_region, velocity_factor, interpolation_strength, save_reduced, save_data_points, print_simulation_initialization, print_simulation_progress, current_id):
     # Initialize
     if print_simulation_initialization:
         print("Simulating single particle with [m =", mass, " q =", charge,
@@ -111,13 +111,13 @@ def simulate(r_particle_init, v_particle_init, charge, mass, dt, time_steps, van
 
         # Van Allen Belt simulation altering
         current_distance = r_particle[i,0]**2 + r_particle[i,1]**2 + r_particle[i,2]**2
-        if 1.0**2 < current_distance < van_allen_belt**2:
+        if 1.0**2 < current_distance < acceleration_region**2:
             # Particle is inside Van Allen radiation belt
             # Particle's velocity is increased due to plasma wave interaction
             v_particle_abs = np.sqrt(v_particle[i, 0] ** 2 + v_particle[i, 1] ** 2 + v_particle[i, 2] ** 2)
             v_particle_target_abs = np.sqrt(v_particle_init[0]**2 + v_particle_init[1]**2 + v_particle_init[2]**2)
-            interpolation_value = ((van_allen_belt-1.0)**2 - (current_distance-1.0))/((van_allen_belt-1.0)**2)
-            interpolation_value = np.power(interpolation_value, 4.0)
+            interpolation_value = ((acceleration_region-1.0)**2 - (current_distance-1.0))/((acceleration_region-1.0)**2)
+            interpolation_value = np.power(interpolation_value, interpolation_strength)
             v_particle_target_abs *= velocity_factor*interpolation_value + 1.0 * (1.0-interpolation_value)
 
             v_particle[i, :] *= v_particle_target_abs / v_particle_abs

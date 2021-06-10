@@ -11,7 +11,7 @@ from os import path
 
 """Program settings"""
 # Initial trajectory simulation
-do_simulation = True
+do_simulation = False
 # Particle absorption simulation
 
 do_post_processing = False
@@ -65,7 +65,7 @@ plot_simple = False
 plot_earth_resolution = 64
 # Resolution of Earth texture ||| Multiple of 2 up until 1024
 animation_earth_resolution = 64
-show_animation = False
+show_animation = True
 save_animation = True
 plot_near_earth = True
 # Particles ending up in 'region_of_interest' Earth-radia are interesting
@@ -104,10 +104,12 @@ maximum_v = 7.5e5
 # Plasma wave interaction contribution
 simulate_plasma_wave_interaction = True
 # Auroral acceleration region (https://www.nature.com/articles/s41467-021-23377-5)
-van_allen_belt = 3.0  # 3 Earth-radia
-# Acceleration target energy (https://agupubs.onlinelibrary.wiley.com/doi/abs/10.1029/JA073i007p02325)
+acceleration_region = 3.0  # 3 Earth-radia
+interpolation_strength = 4.0
+# Acceleration target energy
+# https://agupubs.onlinelibrary.wiley.com/doi/abs/10.1029/JA073i007p02325
 # http://adsabs.harvard.edu/full/1969SSRv...10..413R
-# https://agupubs.onlinelibrary.wiley.com/doi/10.1029/JA076i001p00063 < used for bounds
+# https://agupubs.onlinelibrary.wiley.com/doi/10.1029/JA076i001p00063
 # https://link.springer.com/content/pdf/10.1186/BF03352005.pdf
 peak_target_energy = 1400 * 3.0  # keV
 gamma_target_energy = 4.3 * 1000.0
@@ -193,11 +195,11 @@ def main():
                     # Simulate particle
                     if multi_threading:
                         # Multi-threaded simulation
-                        future = executor.submit(sim.simulate, r_init, v_init, charge_factor*charge_factor2, mass_factor, dt, time_steps, van_allen_belt, velocity_factor, save_reduced, save_data_points, print_simulation_initialization, print_simulation_progress, z)
+                        future = executor.submit(sim.simulate, r_init, v_init, charge_factor*charge_factor2, mass_factor, dt, time_steps, acceleration_region, velocity_factor, interpolation_strength, save_reduced, save_data_points, print_simulation_initialization, print_simulation_progress, z)
                         futures.append(future)
                     else:
                         # Single-threaded simulation
-                        r_save_data, v_save_data, z2 = sim.simulate(r_init, v_init, charge_factor*charge_factor2, mass_factor, dt, time_steps, van_allen_belt, velocity_factor, save_reduced, save_data_points, print_simulation_initialization, print_simulation_progress, z)
+                        r_save_data, v_save_data, z2 = sim.simulate(r_init, v_init, charge_factor*charge_factor2, mass_factor, dt, time_steps, acceleration_region, velocity_factor, interpolation_strength, save_reduced, save_data_points, print_simulation_initialization, print_simulation_progress, z)
 
                         particles_r[z, :, :] = r_save_data
                         particles_v[z, :, :] = v_save_data

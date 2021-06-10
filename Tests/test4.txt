@@ -25,3 +25,4 @@ target energy vs. particles vs. (interpolation)
 100 ~ 18000 eV (maxwell) 	113	(^2.0) (new interpolation algorithm | 10000 particles | 1400*3 peak eV) => mean 1230 | max 9266 | min 0.1 (ok)
 100 ~ 18000 eV (maxwell) 	99	(^4.0) (new interpolation algorithm | 10000 particles | 1400*3 peak eV) => mean 1003 | max 7678 | min 5 (ok)
 100 ~ 18000 eV (maxwell) 	0	(^3.0) (new interpolation algorithm | 10000 particles | 1400*3 peak eV) => 0
+100 ~ 18000 eV (maxwell) 	324	(^4.0) (new interpolation algorithm | 32400 particles | 1400*3 peak eV) => mean 1290 | max 10336 | min 0.38 (ok)
