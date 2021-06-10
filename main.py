@@ -48,7 +48,7 @@ np.random.seed(seed)
 # Time between each iteration ||| minimum: 1E-6 ||| okay: 1E-7 ||| good: 1E-8 ||| best: 1E-9
 dt = 1E-8
 # Total time length [s] ||| direct only: at least 1E-3 ||| indirect and direct: at least 5E-1
-time = 1E-3
+time = 1E-2
 # Time steps
 time_steps = int(time/dt)
 
@@ -65,7 +65,7 @@ plot_simple = False
 plot_earth_resolution = 64
 # Resolution of Earth texture ||| Multiple of 2 up until 1024
 animation_earth_resolution = 64
-show_animation = True
+show_animation = False
 save_animation = True
 plot_near_earth = True
 # Particles ending up in 'region_of_interest' Earth-radia are interesting
@@ -84,7 +84,7 @@ charge_factor = 1.0
 custom_grid = True
 # Factor to adjust custom grid (lower is more towards edges, higher is more towards center)
 scaling_factor = 0.069
-# Approximately 0.0026 AU (=3.9E8 m) from Earth center
+# Approximately 0.0026 AU (=3.9E8 m) from Earth center ||| More than 60 Earth-radia away
 position_x = -3.9E8
 
 particles_y = 180
