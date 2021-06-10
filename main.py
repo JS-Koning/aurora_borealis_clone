@@ -14,13 +14,13 @@ from os import path
 do_simulation = False
 # Particle absorption simulation
 
-do_post_processing = False
+do_post_processing = True
 do_save_stripped_data = False
 do_load_stripped_data = True
 do_create_aurora = True
 
 # Data processing
-do_data_processing = True
+do_data_processing = False
 
 """Logging settings"""
 print_simulation_progress = False
@@ -259,8 +259,9 @@ def main():
 
             energies = 0.5 * sim.m_electron * velocities**2 / sim.q_charge # in eV
             if do_create_aurora:
-                heightlocs = utils.gasses_absorbtion(distances) + 1
+                heightlocs = utils.gasses_absorbtion(energies)
                 print(heightlocs)
+
             else:
                 print('not simulating aurora')
             #for i in range(len(distances[:, 0])):

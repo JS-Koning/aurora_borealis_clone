@@ -465,7 +465,7 @@ def lognormal_dist(sigma, mu, start, stop):
     plt.show()
     return
 
-def gasses_absorbtion(distances):
+def gasses_absorbtion(energies):
     """
     Gasses data only works for 5 km height eacht time.
     returns distribution % of each gas at the given height
@@ -475,24 +475,37 @@ def gasses_absorbtion(distances):
     returns:
 
     """
-    length = len(distances[:, 0])
-
-    file_data = np.genfromtxt('atm_contents.txt')
+    file_data = np.genfromtxt('atm_dataset.txt') #https://ccmc.gsfc.nasa.gov/modelweb/models/msis_vitmo.php
     height = file_data[:, 0]
+    n2 = file_data[:, 1]
+    o2 = file_data[:, 2]
 
-    n2 = file_data[:, 2]
-    o2 = file_data[:, 3]
+    cutoff_array = np.array([0.4, 0.5, 0.65, 0.1, 1.65, 5.6, 40, 300]) #file:///D:/chrome%20downloads/1-s2.0-0032063363902526-main%20(2).pdf
+    cutoff_height = np.array([70, 90, 110, 130, 150, 170, 190, 210])
 
-    particles_num = n2 + o2
-    part_cum = np.cumsum(particles_num[::-1] / sum(particles_num))
-    rng = np.random.rand(length)
+    part_cutoffindx = np.zeros(len(energies[:, 0]))
 
-    a = np.zeros(length)
-    for i in range(len(rng)):
-        a[i] = np.max(np.where(part_cum < rng[i]))
+    for i in range(len(energies[:, 0])):
+        part_cutoffindx[i] = np.max(np.where(cutoff_array < max(energies[i, :])))
+    print(cutoff_height[part_cutoffindx.astype(int)])
+
+    length = len(energies[:, 0])
+
+    index_nasa_cutoff = cutoff_height[part_cutoffindx.astype(int)]/10 - 1
+    index_nasa_cutoff = index_nasa_cutoff.astype(int)
+
+    final_index_height = np.zeros(length)
+    for i in range(len(part_cutoffindx)):
+        particles_num = n2[index_nasa_cutoff[i]:] + o2[index_nasa_cutoff[i]:]
+        part_cum = np.cumsum(particles_num[::-1] / sum(particles_num))
+        print(part_cum)
+        rng = np.random.rand(1)
+
+        final_index_height[i] = np.max(np.where(part_cum < rng))
 
 
-    heights = height[len(height) - a.astype(int)]
 
-    return heights
+    heights_final = height[len(height) - final_index_height.astype(int)]
+
+    return heights_final
 
