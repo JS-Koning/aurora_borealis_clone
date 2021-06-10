@@ -169,4 +169,19 @@
     - [ ] Start preparing presentation
     - [ ] Other points mentioned in point 4 (points of improvement)
 
+## Week 3
+1. Answer on feedback on last week's progress update:
 
+2. General progress feedback:
+    - Limitations of our simulation.
+        - Our simulations has a serious limitation. In the Van Allen belt, our particles do not speed up, and start to slow down even. The reason why: It is due to the limitation in the physics part of the the code. What is wrong: We did not take in to account 'plasma wave interactions'. Some reading up we did are the following articles: 
+            - [general Wikipedia](https://en.wikipedia.org/wiki/Two-stream_instability)
+            - [A tutorial presentation of the two stream instability and Landau damping](http://people.na.infn.it/~fedele/TESINE/Landau%20damping/Anderson%20et%20al_Am%20J%20Phys_69_1262_2001.pdf)
+            - [Statistical Distribution of Whistler Mode Waves in the Radiation Belts With Large Magnetic Field Amplitudes and Comparison to Large Electric Field Amplitudes](https://agupubs.onlinelibrary.wiley.com/doi/10.1029/2019JA026913)
+            - [Formation process of relativistic electron flux through interaction with chorus emissions in the Earth's inner magnetosphere](https://agupubs.onlinelibrary.wiley.com/doi/10.1002/2015JA021563)
+        - Our current understanding of the limitations is as following:
+            - The plasma, which the Van Allen belt consists of, a soup of charged particles creates opposite moving streams (ions and electrons), will behave like waves, creating electromagnetic pulses troughout the plasma waves. These will either give the (relative lower mass) electrons a sudden(?) high kinetic energy of __at least__ 35 times higher than our current simulation. 
+            - Not only plasma waves do this, but also electrons without ions (with different speeds and/or densities etc), its a very complex interaction with multiple components.
+        - How are we planning to fix this?
+            - Well, we're not really going to fix this physically. The mathematics are too complex to implement in the given timeframe.
+            - What we're instead going to do is simply boosting the velocities of particles 'stuck' in the Van Allen belt to a high velocity, and seeing what is going to happen to them. Is this physically correct? Not really, but it is the result of a physical phenomena. We did read that, the speedboost of the electrons are in line with the existing magnetic field lines and/or equator lines (__need more clarification__). So, in our simulation we're skipping a simulation-step and using direct results of other papers.  
