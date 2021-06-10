@@ -480,7 +480,7 @@ def gasses_absorbtion(energies, indices):
     n2 = file_data[:, 1]
     o2 = file_data[:, 2]
 
-    cutoff_array = np.array([0.4, 0.5, 0.65, 0.1, 1.65, 5.6, 40, 300])  #file:///D:/chrome%20downloads/1-s2.0-0032063363902526-main%20(2).pdf
+    cutoff_array = np.array([0.4, 0.5, 0.65, 0.1, 1.65, 5.6, 40, 300])  #1-s2.0-0032063363902526-main%20(2).pdf
     cutoff_height = np.array([70, 90, 110, 130, 150, 170, 190, 210])
 
     part_cutoffindx = np.zeros(len(energies[:, 0]))
