@@ -449,3 +449,18 @@ def plot_testing(particles_r, particles_v, indices):
     for i in range(len(particles_r[:,0])):
         
         plt.plot()
+
+
+def probability_absorbtion():
+    energies = np.array([0.4, 0.5, 0.55, 1.0, 1.65, 5.6 , 40, 300])
+    heights = np.array([270, 250, 210, 170, 150, 120, 100, 75])
+    plt.plot(energies, heights)
+    plt.show()
+
+
+def lognormal_dist(sigma, mu, start, stop):
+    x = np.linspace(start, stop, 1000)
+    pdf = np.exp(-(np.log(x) - mu)**2 / (2 * sigma**2))/ (x * sigma * np.sqrt(2 * np.pi))
+    plt.plot(x,pdf)
+    plt.show()
+    return
