@@ -464,3 +464,35 @@ def lognormal_dist(sigma, mu, start, stop):
     plt.plot(x,pdf)
     plt.show()
     return
+
+def gasses_absorbtion(distances):
+    """
+    Gasses data only works for 5 km height eacht time.
+    returns distribution % of each gas at the given height
+
+    Input:
+    height: int
+    returns:
+
+    """
+    length = len(distances[:, 0])
+
+    file_data = np.genfromtxt('atm_contents.txt')
+    height = file_data[:, 0]
+
+    n2 = file_data[:, 2]
+    o2 = file_data[:, 3]
+
+    particles_num = n2 + o2
+    part_cum = np.cumsum(particles_num[::-1] / sum(particles_num))
+    rng = np.random.rand(length)
+
+    a = np.zeros(length)
+    for i in range(len(rng)):
+        a[i] = np.max(np.where(part_cum < rng[i]))
+
+
+    heights = height[len(height) - a.astype(int)]
+
+    return heights
+

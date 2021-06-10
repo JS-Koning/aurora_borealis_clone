@@ -17,6 +17,7 @@ do_simulation = False
 do_post_processing = False
 do_save_stripped_data = False
 do_load_stripped_data = True
+do_create_aurora = True
 
 # Data processing
 do_data_processing = True
@@ -257,28 +258,33 @@ def main():
             velocities = np.linalg.norm(part_v, axis=2)
 
             energies = 0.5 * sim.m_electron * velocities**2 / sim.q_charge # in eV
-            
-            for i in range(len(distances[:, 0])):
-                plt.plot(distances[i, indices[i, 0]: indices[i, 1]])
-            plt.show()
-            for i in range(len(velocities[:, 0])):
-                plt.plot(velocities[i, indices[i, 0]: indices[i, 1]])
-            plt.show()
-            for i in range(len(energies[:, 0])):
-                plt.plot(energies[i, indices[i, 0]: indices[i, 1]])
-            plt.show()
+            if do_create_aurora:
+                heightlocs = utils.gasses_absorbtion(distances) + 1
+                print(heightlocs)
+            else:
+                print('not simulating aurora')
+            #for i in range(len(distances[:, 0])):
+            #    plt.plot(distances[i, indices[i, 0]: indices[i, 1]])
+            #plt.show()
+            #for i in range(len(velocities[:, 0])):
+            #    plt.plot(velocities[i, indices[i, 0]: indices[i, 1]])
+            #plt.show()
+            #for i in range(len(energies[:, 0])):
+            #    plt.plot(energies[i, indices[i, 0]: indices[i, 1]])
+            #plt.show()
+            #print(part_v)
+            # Plot 3D Earth
+            #fig, ax = utils.plot_earth(plot_simple, plot_earth_resolution)
+            # Plot relevant trajectories
+            #for z in range(len(part_r)):
+            #    r_data = part_r[z]
+            #    v_data = part_r[z]
+                # Plot particle trajectory
+            #    if r_data[-1, 0] ** 2 + r_data[-1, 1] ** 2 + r_data[-1, 2] ** 2 < region_of_interest ** 2:
+                    # Only plot when end-point is closer to than 3 Earth-radia (ignore deflected particles)
+            #        utils.plot_3d(ax, r_data, plot_near_earth)
 
-        # Plot 3D Earth
-        fig, ax = utils.plot_earth(plot_simple, plot_earth_resolution)
-        # Plot relevant trajectories
-        for z in range(len(part_r)):
-            r_data = part_r[z]
-            v_data = part_r[z]
-            # Plot particle trajectory
-            if r_data[-1, 0] ** 2 + r_data[-1, 1] ** 2 + r_data[-1, 2] ** 2 < region_of_interest ** 2:
-                # Only plot when end-point is closer to than 3 Earth-radia (ignore deflected particles)
-                utils.plot_3d(ax, r_data, plot_near_earth)
-            
+
         # Load data
         # Filter useful trajectories (within 1.1-Earth Radius till 1.01-Earth-Radius)
         # Trace back trajectories to stop at absorption altitudes
