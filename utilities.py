@@ -465,7 +465,7 @@ def lognormal_dist(sigma, mu, start, stop):
     plt.show()
     return
 
-def gasses_absorbtion(energies):
+def gasses_absorbtion(energies, indices):
     """
     Gasses data only works for 5 km height eacht time.
     returns distribution % of each gas at the given height
@@ -480,14 +480,15 @@ def gasses_absorbtion(energies):
     n2 = file_data[:, 1]
     o2 = file_data[:, 2]
 
-    cutoff_array = np.array([0.4, 0.5, 0.65, 0.1, 1.65, 5.6, 40, 300]) #file:///D:/chrome%20downloads/1-s2.0-0032063363902526-main%20(2).pdf
+    cutoff_array = np.array([0.4, 0.5, 0.65, 0.1, 1.65, 5.6, 40, 300])  #file:///D:/chrome%20downloads/1-s2.0-0032063363902526-main%20(2).pdf
     cutoff_height = np.array([70, 90, 110, 130, 150, 170, 190, 210])
 
     part_cutoffindx = np.zeros(len(energies[:, 0]))
-
     for i in range(len(energies[:, 0])):
-        part_cutoffindx[i] = np.max(np.where(cutoff_array < max(energies[i, :])))
-    print(cutoff_height[part_cutoffindx.astype(int)])
+        if np.where(cutoff_array < np.max(energies[i, :]))[0].size == 0:
+            part_cutoffindx[i] = 0
+        else:
+            part_cutoffindx[i] = np.max(np.where(cutoff_array < np.max(energies[i, :])))
 
     length = len(energies[:, 0])
 
@@ -498,7 +499,7 @@ def gasses_absorbtion(energies):
     for i in range(len(part_cutoffindx)):
         particles_num = n2[index_nasa_cutoff[i]:] + o2[index_nasa_cutoff[i]:]
         part_cum = np.cumsum(particles_num[::-1] / sum(particles_num))
-        print(part_cum)
+        #print(part_cum)
         rng = np.random.rand(1)
 
         final_index_height[i] = np.max(np.where(part_cum < rng))
