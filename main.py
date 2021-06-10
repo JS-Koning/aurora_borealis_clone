@@ -11,18 +11,18 @@ from os import path
 
 """Program settings"""
 # Initial trajectory simulation
-do_simulation = False
+do_simulation = True
 # Particle absorption simulation
 
-do_post_processing = True
+do_post_processing = False
 do_save_stripped_data = False
 do_load_stripped_data = True
 
 # Data processing
-do_data_processing = False
+do_data_processing = True
 
 """Logging settings"""
-print_simulation_progress = True
+print_simulation_progress = False
 print_simulation_initialization = False
 
 """Multi-threading settings"""
@@ -54,7 +54,7 @@ time_steps = int(time/dt)
 
 """Dataset settings"""
 # Dataset settings
-save_data = False
+save_data = True
 save_reduced = True
 save_data_points = round(3 * 1E-5/dt)
 
@@ -65,11 +65,11 @@ plot_simple = False
 plot_earth_resolution = 64
 # Resolution of Earth texture ||| Multiple of 2 up until 1024
 animation_earth_resolution = 64
-show_animation = True
+show_animation = False
 save_animation = True
 plot_near_earth = True
 # Particles ending up in 'region_of_interest' Earth-radia are interesting
-region_of_interest = 3.0  # 640 km approximately
+region_of_interest = 1.1  # 640 km approximately
 
 """Particle settings"""
 # Factors to initialize (relativistic) charged particle with
@@ -101,6 +101,16 @@ maximum_z = 4.5E7
 minimum_v = 3.0e5
 # maximum velocity: 750 km/s ||| Fast solar wind @ 0.9 ~ 1.1 AU
 maximum_v = 7.5e5
+# Plasma wave interaction contribution
+simulate_plasma_wave_interaction = True
+# Auroral acceleration region (https://www.nature.com/articles/s41467-021-23377-5)
+van_allen_belt = 3.0  # 3 Earth-radia
+# Acceleration target energy (https://agupubs.onlinelibrary.wiley.com/doi/abs/10.1029/JA073i007p02325)
+# http://adsabs.harvard.edu/full/1969SSRv...10..413R
+# https://agupubs.onlinelibrary.wiley.com/doi/10.1029/JA076i001p00063 < used for bounds
+# https://link.springer.com/content/pdf/10.1186/BF03352005.pdf
+peak_target_energy = 1400 * 3.0  # keV
+gamma_target_energy = 4.3 * 1000.0
 
 
 def main():
@@ -125,10 +135,28 @@ def main():
         # Define all initial velocities
         v_init_all = np.random.uniform(minimum_v, maximum_v, [particles_y, particles_z])
 
+        # Define all velocity factors using Gamma/Maxwell distribution
+        # https://link.springer.com/content/pdf/10.1186/BF03352005.pdf
+        target_energy_all = np.random.gamma(peak_target_energy / gamma_target_energy, gamma_target_energy, [particles_y, particles_z])
+        # Limit target energies using min and max
+        #target_energy_all = np.where(target_energy_all < minimum_target_energy, minimum_target_energy, target_energy_all)
+        #target_energy_all = np.where(target_energy_all > maximum_target_energy, maximum_target_energy,
+        #                             target_energy_all)
+
+        velocity_factor_all = np.sqrt(target_energy_all / (0.5 * sim.m_electron / sim.q_charge))
+        velocity_factor_all /= (minimum_v + maximum_v) / 2.0
+
+        if not simulate_plasma_wave_interaction:
+            velocity_factor = 1.0
+
         for y in range(len(y_space)):
             # Initialize arrays for saving reduced simulation data
-            particles_r = np.zeros((particles_z, save_data_points, 3))
-            particles_v = np.zeros((particles_z, save_data_points, 3))
+            if save_reduced:
+                particles_r = np.zeros((particles_z, save_data_points, 3))
+                particles_v = np.zeros((particles_z, save_data_points, 3))
+            else:
+                particles_r = np.zeros((particles_z, time_steps, 3))
+                particles_v = np.zeros((particles_z, time_steps, 3))
 
             # Whether the simulation over all Z-grid-coordinates for current Y-grid-coordinate was successful
             success = False
@@ -152,6 +180,8 @@ def main():
                     r_init = np.array([position_x, position_y, position_z])
                     # Initialize particle velocity
                     v_init = np.array([v_init_all[y, z], 0.0, 0.0])
+                    # Initialize velocity factor
+                    velocity_factor = velocity_factor_all[y, z]
 
                     # Change particles' charge for symmetry
                     charge_factor2 = 1
@@ -163,11 +193,11 @@ def main():
                     # Simulate particle
                     if multi_threading:
                         # Multi-threaded simulation
-                        future = executor.submit(sim.simulate, r_init, v_init, charge_factor*charge_factor2, mass_factor, dt, time_steps, region_of_interest, save_reduced, save_data_points, print_simulation_initialization, print_simulation_progress, z)
+                        future = executor.submit(sim.simulate, r_init, v_init, charge_factor*charge_factor2, mass_factor, dt, time_steps, van_allen_belt, velocity_factor, save_reduced, save_data_points, print_simulation_initialization, print_simulation_progress, z)
                         futures.append(future)
                     else:
                         # Single-threaded simulation
-                        r_save_data, v_save_data, z2 = sim.simulate(r_init, v_init, charge_factor*charge_factor2, mass_factor, dt, time_steps, region_of_interest, save_reduced, save_data_points, print_simulation_initialization, print_simulation_progress, z)
+                        r_save_data, v_save_data, z2 = sim.simulate(r_init, v_init, charge_factor*charge_factor2, mass_factor, dt, time_steps, van_allen_belt, velocity_factor, save_reduced, save_data_points, print_simulation_initialization, print_simulation_progress, z)
 
                         particles_r[z, :, :] = r_save_data
                         particles_v[z, :, :] = v_save_data
@@ -224,12 +254,16 @@ def main():
             print(indices[0, 0])
             velocities = np.linalg.norm(part_v, axis=2)
 
+            energies = 0.5 * sim.m_electron * velocities**2 / sim.q_charge # in eV
             
             for i in range(len(distances[:, 0])):
                 plt.plot(distances[i, indices[i, 0]: indices[i, 1]])
             plt.show()
-            for i in range(len(distances[:, 0])):
+            for i in range(len(velocities[:, 0])):
                 plt.plot(velocities[i, indices[i, 0]: indices[i, 1]])
+            plt.show()
+            for i in range(len(energies[:, 0])):
+                plt.plot(energies[i, indices[i, 0]: indices[i, 1]])
             plt.show()
 
         # Plot 3D Earth
@@ -298,7 +332,12 @@ def main():
               (relevant_count/particles_y/particles_z*100), "%)")
 
         # Initialize relevant particles array
-        r_relevant = np.zeros([relevant_count, save_data_points, 3])
+        if save_reduced:
+            r_relevant = np.zeros([relevant_count, save_data_points, 3])
+            v_relevant = np.zeros([relevant_count, save_data_points, 3])
+        else:
+            r_relevant = np.zeros([relevant_count, time_steps, 3])
+            v_relevant = np.zeros([relevant_count, time_steps, 3])
 
         # Retrieve relevant particles only from all particles
         for relevant_particle in range(relevant_count):
@@ -311,6 +350,16 @@ def main():
             r_dataset, v_dataset = utils.load_datafile(file_str)
             # Load data using Z-grid-coordinate
             r_relevant[relevant_particle, :, :] = r_dataset[z]
+            v_relevant[relevant_particle, :, :] = v_dataset[z]
+
+        velocities = np.linalg.norm(v_relevant, axis=2)
+        plt.figure()
+        for i in range(len(velocities[:, 0])):
+            plt.plot(velocities[i, :])
+        plt.show()
+        print("mean", np.mean(velocities[:,-1]))
+        print("max", np.max(velocities[:,-1]))
+        print("min", np.min(velocities[:,-1]))
 
         if show_animation:
             # Plot 3D Earth for animation
@@ -333,6 +382,7 @@ def main():
     plt.show()
 
     return True
+
 
 # Execute main program
 if __name__ == '__main__':

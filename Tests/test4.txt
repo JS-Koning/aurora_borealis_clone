@@ -1,0 +1,27 @@
+Relevancy < 1.1 R_E
+dt:e-8
+time:e-4
+acceleration region: 9.0 R_E
+
+interpolation vs particles
+^1	0
+^2	0
+^4	103
+^8	10
+^6	42
+^3	35
+^4.5	110
+
+Winner: ^4.5
+
+acceleration region: 3.0 R_E
+target energy vs. particles vs. (interpolation)
+500 ~ 30000 eV (uniform)	313 	(^4.5)
+100 ~ 15000 eV (uniform)	x 	(^4.5)
+100 ~ 18000 eV (maxwell)	293	(^4.0) => mean eV: 209 | max eV: 3730 | min eV: 14 (too low...)
+100 ~ 18000 eV (maxwell) 	103	(^4.0) (new interpolation algorithm | 10000 particles) => mean eV: 316 | max eV: 4581 | min eV: 3 (too low...)
+100 ~ 18000 eV (maxwell) 	106	(^2.0) (new interpolation algorithm | 10000 particles) => mean eV: 350 | max eV: 3757 | min eV: 2 (too low...)
+100 ~ 18000 eV (maxwell) 	0	(^1.0) (new interpolation algorithm | 10000 particles) => 0
+100 ~ 18000 eV (maxwell) 	113	(^2.0) (new interpolation algorithm | 10000 particles | 1400*3 peak eV) => mean 1230 | max 9266 | min 0.1 (ok)
+100 ~ 18000 eV (maxwell) 	99	(^4.0) (new interpolation algorithm | 10000 particles | 1400*3 peak eV) => mean 1003 | max 7678 | min 5 (ok)
+100 ~ 18000 eV (maxwell) 	0	(^3.0) (new interpolation algorithm | 10000 particles | 1400*3 peak eV) => 0

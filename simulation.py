@@ -84,7 +84,8 @@ def runge_kutta_4(charge, mass, dt, r_particle_last_1, v_particle_last_1):
     return r_particle, v_particle
 
 
-def simulate(r_particle_init, v_particle_init, charge, mass, dt, time_steps, region_of_interest, save_reduced, save_data_points, print_simulation_initialization, print_simulation_progress, current_id):
+@jit(nopython=True)
+def simulate(r_particle_init, v_particle_init, charge, mass, dt, time_steps, van_allen_belt, velocity_factor, save_reduced, save_data_points, print_simulation_initialization, print_simulation_progress, current_id):
     # Initialize
     if print_simulation_initialization:
         print("Simulating single particle with [m =", mass, " q =", charge,
@@ -95,8 +96,7 @@ def simulate(r_particle_init, v_particle_init, charge, mass, dt, time_steps, reg
 
     # Initial condition
     r_particle[0, :] = r_particle_init / r_earth # now in m (only vary y,z => grid)
-    v_particle[0, :] = v_particle_init # min 250, max 3000 km/s
-    #v_particle[0, :], r_particle[0, :],  = utils.initialize_loc_vel(300000, 100, 1, 0)
+    v_particle[0, :] = v_particle_init # min 300, max 750 km/s near Earth
 
     mass = m_electron * mass
     charge = -q_charge * charge
@@ -104,30 +104,35 @@ def simulate(r_particle_init, v_particle_init, charge, mass, dt, time_steps, reg
     # Simulate using algorithm
     for i in range(1, time_steps):
         if print_simulation_progress and (i+1) % int(time_steps / 10) == 0:
-            print("Simulation progress:", ("%.2f" % ((i+1) / time_steps * 100)), "%...")
+            print("Simulation progress:", np.round(((i+1) / time_steps * 100), 2), "%...")
 
         # Runge-Kutta-4 algorithm
         r_particle[i, :], v_particle[i, :] = runge_kutta_4(charge, mass, dt, r_particle[i-1, :], v_particle[i-1, :])
 
-        # Stop if at closest point and within RoI (Region of Interest)
-        if r_particle[i, 0]**2 + r_particle[i, 1]**2 + r_particle[i, 2]**2 > r_particle[i-1, 0]**2 +\
-                                                          r_particle[i-1, 1]**2 + r_particle[i-1, 2]**2 and r_particle[i, 0]**2 + r_particle[i, 1]**2 + r_particle[i, 2]**2 < region_of_interest**2:
-        #    r_particle[i, :] = r_particle[i-1, :]
-        #    v_particle[i, :] = v_particle[i-1, :]
-            pass
+        # Van Allen Belt simulation altering
+        current_distance = r_particle[i,0]**2 + r_particle[i,1]**2 + r_particle[i,2]**2
+        if 1.0**2 < current_distance < van_allen_belt**2:
+            # Particle is inside Van Allen radiation belt
+            # Particle's velocity is increased due to plasma wave interaction
+            v_particle_abs = np.sqrt(v_particle[i, 0] ** 2 + v_particle[i, 1] ** 2 + v_particle[i, 2] ** 2)
+            v_particle_target_abs = np.sqrt(v_particle_init[0]**2 + v_particle_init[1]**2 + v_particle_init[2]**2)
+            interpolation_value = ((van_allen_belt-1.0)**2 - (current_distance-1.0))/((van_allen_belt-1.0)**2)
+            interpolation_value = np.power(interpolation_value, 4.0)
+            v_particle_target_abs *= velocity_factor*interpolation_value + 1.0 * (1.0-interpolation_value)
 
-    # Find index where simulation ends (choose index[3] to skip first 3 values as a failsafe)
-    #index = np.where(r_particle[:-1, :] == r_particle[1:, :])[0]
+            v_particle[i, :] *= v_particle_target_abs / v_particle_abs
+
+    # Find index where simulation ends
     r_particle_radial = np.sqrt(r_particle[:,0]**2 + r_particle[:,1]**2 + r_particle[:,2]**2)
-    index = [0, 0, 0, np.argmin(r_particle_radial)]
+    index = np.argmin(r_particle_radial)
 
     if save_reduced:
         # Reduce simulation data
-        if len(index) != 0:
-            if index[3] >= save_data_points:
+        if index != 0:
+            if index >= save_data_points:
                 # Save data until trajectory ends ||| Trajectory ended normally
-                r_save_data = r_particle[max(0, index[3] - save_data_points):min(index[3], len(r_particle) - 1), :]
-                v_save_data = v_particle[max(0, index[3] - save_data_points):min(index[3], len(v_particle) - 1), :]
+                r_save_data = r_particle[max(0, index - save_data_points):min(index, len(r_particle) - 1), :]
+                v_save_data = v_particle[max(0, index - save_data_points):min(index, len(v_particle) - 1), :]
             else:
                 # Save data from beginning of simulation ||| Trajectory ended too soon
                 r_save_data = r_particle[0: save_data_points, :]
