@@ -481,7 +481,7 @@ def gasses_absorbtion(energies, indices):
     o2 = file_data[:, 2]
 
     cutoff_array = np.array([0.4, 0.5, 0.65, 0.1, 1.65, 5.6, 40, 300])  #1-s2.0-0032063363902526-main%20(2).pdf
-    cutoff_height = np.array([70, 90, 110, 130, 150, 170, 190, 210])
+    cutoff_height = np.array([210, 190, 170, 150, 130, 110, 90, 70])
 
     part_cutoffindx = np.zeros(len(energies[:, 0]))
     for i in range(len(energies[:, 0])):
@@ -510,3 +510,26 @@ def gasses_absorbtion(energies, indices):
 
     return heights_final
 
+def location_absorption(part_r, height_locs, indices):
+    distances = np.linalg.norm(part_r, axis=2)
+    indices = indices.astype(int)
+    r_earth_func = 6371
+    height_locs = height_locs/r_earth_func + 1
+    counter1 = 0
+    counter2 = 0
+    for i in range(len(distances[:, 0])):
+        if height_locs[i] < np.min(distances[i, indices[i, 1] - 1:]):
+            counter1 += 1
+            index_r_earth = np.min(np.where(distances[i, :] < height_locs[i]))
+            distances_interpolation = np.linspace(distances[i, index_r_earth-1:index_r_earth], num=300)
+            x_interpolation = np.linspace(part_r[i, index_r_earth-1, 0], part_r[i, index_r_earth, 0], num=300 )
+            y_interpolation = np.linspace(part_r[i, index_r_earth-1, 1], part_r[i, index_r_earth, 1], num=300 )
+            z_interpolation = np.linspace(part_r[i, index_r_earth-1, 2], part_r[i, index_r_earth, 2] )
+            print(height_locs[i])
+            print(np.min(distances[i, indices[i, 1] - 1:]))
+        else:
+            counter2 += 1
+    print('hitting earth')
+    print(counter1)
+    print('nothittingearth')
+    print(counter2)

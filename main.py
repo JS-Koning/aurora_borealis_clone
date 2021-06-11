@@ -250,25 +250,29 @@ def main():
         elif do_load_stripped_data:
             part_r, part_v, indices = utils.load_relevant_data(savestring, cutoff_high, cutoff_low, particles_y)
             #print(indices[:, 1])
+            print(part_r[0][0])
             lenind = indices[:, 1] - indices[:, 0]
             indices = indices.astype(int)
             #xarr = arange(np.max(lenind))
             distances = np.linalg.norm(part_r, axis=2)
-            print(indices[0, 0])
             velocities = np.linalg.norm(part_v, axis=2)
-
-            energies = 0.5 * sim.m_electron * velocities**2 / sim.q_charge # in eV
+            energies = 0.5 * sim.m_electron * velocities**2 / (sim.q_charge*1000) # in keV
+            print(np.max(energies))
             if do_create_aurora:
-                heightlocs = utils.gasses_absorbtion(energies)
-                print(heightlocs)
+                heightlocs = utils.gasses_absorbtion(energies, indices)
+                #print(heightlocs)
+                #print(len(heightlocs))
+                utils.location_absorption(part_r, heightlocs, indices)
 
             else:
                 print('not simulating aurora')
-            #for i in range(len(distances[:, 0])):
-            #    plt.plot(distances[i, indices[i, 0]: indices[i, 1]])
-            #plt.show()
-            #for i in range(len(velocities[:, 0])):
-            #    plt.plot(velocities[i, indices[i, 0]: indices[i, 1]])
+            for i in range(len(distances[:, 0])):
+                plt.plot(distances[i, indices[i, 0]: indices[i, 1] + 10])
+            plt.show()
+            for i in range(len(velocities[:, 0])):
+                plt.plot(velocities[i, indices[i, 0]: indices[i, 1]])
+
+
             #plt.show()
             #for i in range(len(energies[:, 0])):
             #    plt.plot(energies[i, indices[i, 0]: indices[i, 1]])
