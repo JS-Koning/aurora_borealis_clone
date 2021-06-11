@@ -293,6 +293,11 @@ def main():
             energies = 0.5 * sim.m_electron * velocities**2 / (sim.q_charge*1000)  # in keV
 
             if do_create_aurora:
+                heightlocs = utils.gasses_absorbtion(energies, indices)
+                print(heightlocs)
+                #print(len(heightlocs))
+                utils.location_absorption(part_r, heightlocs, indices)
+
                 height_locs = utils.gasses_absorbtion(energies, indices)
                 utils.location_absorption(part_r, height_locs, indices)
             else:
