@@ -458,7 +458,7 @@ def plot_testing(particles_r, particles_v, indices):
         plt.plot()
 
 
-def probability_absorbtion():
+def probability_absorption():
     energies = np.array([0.4, 0.5, 0.55, 1.0, 1.65, 5.6 , 40, 300])
     heights = np.array([270, 250, 210, 170, 150, 120, 100, 75])
     plt.plot(energies, heights)
@@ -472,7 +472,8 @@ def lognormal_dist(sigma, mu, start, stop):
     plt.show()
     return
 
-def gasses_absorbtion(energies, indices):
+
+def gasses_absorption(energies, indices):
     """
     Gasses data only works for 5 km height eacht time.
     returns distribution % of each gas at the given height
@@ -516,6 +517,7 @@ def gasses_absorbtion(energies, indices):
     heights_final = height[len(height) - final_index_height.astype(int)]
 
     return heights_final
+
 
 def location_absorption(part_r, height_locs, indices):
     distances = np.linalg.norm(part_r, axis=2)
