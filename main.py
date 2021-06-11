@@ -13,12 +13,7 @@ from os import path
 # Initial trajectory simulation
 do_simulation = False
 # Particle absorption simulation
-
 do_post_processing = True
-do_save_stripped_data = True
-do_load_stripped_data = False
-do_create_aurora = False
-
 # Data processing
 do_data_processing = False
 
@@ -43,6 +38,7 @@ executor = thread.ProcessPoolExecutor(threads)
 """Seed settings"""
 # Seed for reproducibility ||| Guess that's why they call it 'seed'...
 seed = 420
+# Apply seed to random functions within NumPy
 np.random.seed(seed)
 
 """Time settings"""
@@ -54,46 +50,76 @@ time = 1E-3
 time_steps = int(time/dt)
 
 """Dataset settings"""
-# Dataset settings
+# Should simulation datasets be saved
 save_data = True
+# Should simulation datasets be reduced before saving
 save_reduced = True
+# Reduced dataset size (trajectory points)
 save_data_points = round(3 * 1E-5/dt)
 
+"""Post-processing settings"""
+# Should the relevant particles be saved
+do_save_stripped_data = True
+# Should the relevant particles be loaded
+do_load_stripped_data = True
+# Should aurora data be generated
+do_create_aurora = False
+# What is the upper bound for auroras (in R_Earth) ||| Approximately 640 km
+relevant_upper_bound_altitude = 1.1
+# What is the lower bound for auroras (in R_Earth) ||| Approximately 64 km
+relevant_lower_bound_altitude = 1.01
+
 """Plot settings"""
-# Plot settings
+# Should a simple Earth model be drawn instead of a (heavier) realistic one
 plot_simple = False
 # Resolution of Earth texture ||| Multiple of 2 up until 1024
 plot_earth_resolution = 64
 # Resolution of Earth texture ||| Multiple of 2 up until 1024
 animation_earth_resolution = 64
-show_animation = False
+# Should animations be shown
+show_animation = True
+# Should animations be saved after being shown
 save_animation = True
+# Should plots and animations be rendered near Earth
 plot_near_earth = True
-# Particles ending up in 'region_of_interest' Earth-radia are interesting
-region_of_interest = 1.1  # 640 km approximately
+# Which trajectories should be plotted ||| Particles ending up in approximately 640km (1.1 Earth-radia) are interesting
+plot_region_of_interest = 1.1
 
 """Particle settings"""
-# Factors to initialize (relativistic) charged particle with
+# Factors to initialize (relativistic) charged particle with || UNUSED
 relativistic = False
+# Should anti-particles be simulated (not realistic) || USED
 simulate_anti_particles = False
+# Relativistic mass factor || SEMI-USED
 mass_factor = 1.0
+# Relativistic charge factor || SEMI-USED
 charge_factor = 1.0
 
 """Initial position settings"""
-# Initial positions grid [m]
 # Around 5E7 seems to give most interesting results ||| Custom grid spaces more points in outer grid coordinates
 custom_grid = True
 # Factor to adjust custom grid (lower is more towards edges, higher is more towards center)
 scaling_factor = 0.069
+
+# Initial positions grid in y,z plane at x distance [m]
+# X-grid settings
 # Approximately 0.0026 AU (=3.9E8 m) from Earth center ||| More than 60 Earth-radia away
 position_x = -3.9E8
 
+# Y-grid settings
+# Amount of particles in Y-direction
 particles_y = 180
+# Minimal Y position
 minimum_y = -4.5E7
+# Maximal Y position
 maximum_y = 4.5E7
 
+# Z-grid settings
+# Amount of particles in Z-direction
 particles_z = 180
+# Minimal Z position
 minimum_z = -4.5E7
+# Maximal Z position
 maximum_z = 4.5E7
 
 """Initial velocity settings"""
@@ -106,8 +132,9 @@ maximum_v = 7.5e5
 simulate_plasma_wave_interaction = True
 # Auroral acceleration region (https://www.nature.com/articles/s41467-021-23377-5)
 acceleration_region = 3.0  # 3 Earth-radia
+# How fast should the particles be sped up towards the target energy ||| Lower = faster; higher = slower
 interpolation_strength = 4.0
-# Acceleration target energy
+# Acceleration target energy (parameters for Gamma/Maxwell distribution)
 # https://agupubs.onlinelibrary.wiley.com/doi/abs/10.1029/JA073i007p02325
 # http://adsabs.harvard.edu/full/1969SSRv...10..413R
 # https://agupubs.onlinelibrary.wiley.com/doi/10.1029/JA076i001p00063
@@ -141,16 +168,9 @@ def main():
         # Define all velocity factors using Gamma/Maxwell distribution
         # https://link.springer.com/content/pdf/10.1186/BF03352005.pdf
         target_energy_all = np.random.gamma(peak_target_energy / gamma_target_energy, gamma_target_energy, [particles_y, particles_z])
-        # Limit target energies using min and max
-        #target_energy_all = np.where(target_energy_all < minimum_target_energy, minimum_target_energy, target_energy_all)
-        #target_energy_all = np.where(target_energy_all > maximum_target_energy, maximum_target_energy,
-        #                             target_energy_all)
 
         velocity_factor_all = np.sqrt(target_energy_all / (0.5 * sim.m_electron / sim.q_charge))
         velocity_factor_all /= (minimum_v + maximum_v) / 2.0
-
-        if not simulate_plasma_wave_interaction:
-            velocity_factor = 1.0
 
         for y in range(len(y_space)):
             # Initialize arrays for saving reduced simulation data
@@ -184,7 +204,10 @@ def main():
                     # Initialize particle velocity
                     v_init = np.array([v_init_all[y, z], 0.0, 0.0])
                     # Initialize velocity factor
-                    velocity_factor = velocity_factor_all[y, z]
+                    if simulate_plasma_wave_interaction:
+                        velocity_factor = velocity_factor_all[y, z]
+                    else:
+                        velocity_factor = 1.0
 
                     # Change particles' charge for symmetry
                     charge_factor2 = 1
@@ -238,17 +261,22 @@ def main():
     if do_post_processing:
         # Begin post-processing
         print("Post-processing...")
-        savestring = 'relevant_data'
-
-        
-        cutoff_high = 1.1
-        cutoff_low = 1.01
-        
         if do_save_stripped_data:
-            utils.save_relevant_data(savestring, cutoff_high, cutoff_low, particles_y)
-        
-        elif do_load_stripped_data:
-            part_r, part_v, indices = utils.load_relevant_data(savestring, cutoff_high, cutoff_low, particles_y)
+            print("Saving stripped data...")
+            if save_reduced:
+                utils.save_relevant_data(relevant_upper_bound_altitude, relevant_lower_bound_altitude, particles_y,
+                                         time, dt, particles_y*particles_z, save_data_points)
+            else:
+                utils.save_relevant_data(relevant_upper_bound_altitude, relevant_lower_bound_altitude, particles_y,
+                                         time, dt, particles_y * particles_z, time_steps)
+
+        if do_load_stripped_data:
+            print("Loading stripped data...")
+            file_str = 'Datasets/DataStripped_t' + str(time) + 'dt' + str(dt) + \
+                          'n' + str(particles_y*particles_z) + ".h5"
+            part_r, part_v, indices = utils.load_relevant_data(file_str, relevant_upper_bound_altitude, relevant_lower_bound_altitude, particles_y ,
+                                         time, dt, particles_y * particles_z)
+
             #print(indices[:, 1])
             print(part_r[0][0])
             lenind = indices[:, 1] - indices[:, 0]
@@ -331,7 +359,7 @@ def main():
                     r_data = r_dataset[z]
                     v_data = v_dataset[z]
                     # Plot particle trajectory
-                    if r_data[-1, 0] ** 2 + r_data[-1, 1] ** 2 + r_data[-1, 2] ** 2 < region_of_interest ** 2:
+                    if r_data[-1, 0] ** 2 + r_data[-1, 1] ** 2 + r_data[-1, 2] ** 2 < plot_region_of_interest ** 2:
                         # Only plot when end-point is closer to than 3 Earth-radia (ignore deflected particles)
                         utils.plot_3d(ax, r_data, plot_near_earth)
                         # Add count of amount of relevant particles
