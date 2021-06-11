@@ -15,9 +15,9 @@ do_simulation = False
 # Particle absorption simulation
 
 do_post_processing = True
-do_save_stripped_data = False
-do_load_stripped_data = True
-do_create_aurora = True
+do_save_stripped_data = True
+do_load_stripped_data = False
+do_create_aurora = False
 
 # Data processing
 do_data_processing = False
@@ -47,9 +47,9 @@ np.random.seed(seed)
 
 """Time settings"""
 # Time between each iteration ||| minimum: 1E-6 ||| okay: 1E-7 ||| good: 1E-8 ||| best: 1E-9
-dt = 1E-8
+dt = 1E-9
 # Total time length [s] ||| direct only: at least 1E-3 ||| indirect and direct: at least 5E-1
-time = 1E-2
+time = 1E-3
 # Time steps
 time_steps = int(time/dt)
 
@@ -365,14 +365,15 @@ def main():
             r_relevant[relevant_particle, :, :] = r_dataset[z]
             v_relevant[relevant_particle, :, :] = v_dataset[z]
 
-        velocities = np.linalg.norm(v_relevant, axis=2)
-        plt.figure()
-        for i in range(len(velocities[:, 0])):
-            plt.plot(velocities[i, :])
-        plt.show()
-        print("mean", np.mean(velocities[:,-1]))
-        print("max", np.max(velocities[:,-1]))
-        print("min", np.min(velocities[:,-1]))
+        if relevant_count != 0:
+            velocities = np.linalg.norm(v_relevant, axis=2)
+            plt.figure()
+            for i in range(len(velocities[:, 0])):
+                plt.plot(velocities[i, :])
+            plt.show()
+            print("mean", np.mean(velocities[:,-1]))
+            print("max", np.max(velocities[:,-1]))
+            print("min", np.min(velocities[:,-1]))
 
         if show_animation:
             # Plot 3D Earth for animation

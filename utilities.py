@@ -353,13 +353,13 @@ def save_relevant_data(savestring, cutoff_high, cutoff_low, particles_y):
 
     earth_distance = cutoff_high
 
-    save_particles_stripped_r = np.zeros((1,3000, 3))
-    save_particles_stripped_v = np.zeros((1,3000, 3))
+    save_particles_stripped_r = np.zeros((1,30000, 3))
+    save_particles_stripped_v = np.zeros((1,30000, 3))
     save_usefull_indices = np.zeros((1,2))
 
     for i in range(particles_y):
 
-        filestr = 'Datasets/Data_t0.001dt1e-08n32400y'+ str(i)+'.h5'
+        filestr = 'Datasets/Data_t0.001dt1e-09n32400y'+ str(i)+'.h5'
         #print(filestr)
         particles_r, particles_v = load_datafile(filestr)
 
