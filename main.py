@@ -15,9 +15,9 @@ do_simulation = False
 # Particle absorption simulation
 
 do_post_processing = True
-do_save_stripped_data = True
-do_load_stripped_data = False
-do_create_aurora = False
+do_save_stripped_data = False
+do_load_stripped_data = True
+do_create_aurora = True
 
 # Data processing
 do_data_processing = False
@@ -257,10 +257,11 @@ def main():
             distances = np.linalg.norm(part_r, axis=2)
             velocities = np.linalg.norm(part_v, axis=2)
             energies = 0.5 * sim.m_electron * velocities**2 / (sim.q_charge*1000) # in keV
+            print(indices[:, 1] - indices[:, 0])
             print(np.max(energies))
             if do_create_aurora:
                 heightlocs = utils.gasses_absorbtion(energies, indices)
-                #print(heightlocs)
+                print(heightlocs)
                 #print(len(heightlocs))
                 utils.location_absorption(part_r, heightlocs, indices)
 

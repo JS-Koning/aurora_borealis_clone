@@ -359,7 +359,7 @@ def save_relevant_data(savestring, cutoff_high, cutoff_low, particles_y):
 
     for i in range(particles_y):
 
-        filestr = 'Datasets/Data_t0.001dt1e-09n32400y'+ str(i)+'.h5'
+        filestr = 'Datasets/Data_t0.001dt1e-09n32400y' + str(i)+'.h5'
         #print(filestr)
         particles_r, particles_v = load_datafile(filestr)
 
@@ -375,9 +375,9 @@ def save_relevant_data(savestring, cutoff_high, cutoff_low, particles_y):
         #print(usefull_indices)
 
         cutoff_indices = np.zeros((len(usefull_indices[0]), 2))
-        for i in range(len(usefull_indices[0])):
-            cutoff_indices[i, 0] = (find_nearest_index(data_within_range[i, :], cutoff_high))
-            cutoff_indices[i, 1] = (find_nearest_index(data_within_range[i, :], cutoff_low))
+        for j in range(len(usefull_indices[0])):
+            cutoff_indices[j, 0] = (find_nearest_index(data_within_range[i, :], cutoff_high))
+            cutoff_indices[j, 1] = (find_nearest_index(data_within_range[i, :], cutoff_low))
             # height_data[i, :] = data_within_range[i, cutoff_indices_high : cutoff_indices_low]
         cutoff_indices = cutoff_indices.astype(int)
         #print(cutoff_indices)
@@ -517,19 +517,45 @@ def location_absorption(part_r, height_locs, indices):
     height_locs = height_locs/r_earth_func + 1
     counter1 = 0
     counter2 = 0
+    xyz_absorb = np.zeros((len(distances[:, 0]), 3))
     for i in range(len(distances[:, 0])):
-        if height_locs[i] < np.min(distances[i, indices[i, 1] - 1:]):
+        #print(indices[i, 0] - indices[i, 1])
+        #print(indices[i, 1])
+        #print(np.where(np.min(distances[i, indices[i, 0] : indices[i, 1]] < height_locs[i]))[0])
+        if np.min(distances[i, indices[i, 0]-1 : indices[i, 1]]) > height_locs[i]:
+            # find the lowest point
             counter1 += 1
-            index_r_earth = np.min(np.where(distances[i, :] < height_locs[i]))
-            distances_interpolation = np.linspace(distances[i, index_r_earth-1:index_r_earth], num=300)
-            x_interpolation = np.linspace(part_r[i, index_r_earth-1, 0], part_r[i, index_r_earth, 0], num=300 )
-            y_interpolation = np.linspace(part_r[i, index_r_earth-1, 1], part_r[i, index_r_earth, 1], num=300 )
-            z_interpolation = np.linspace(part_r[i, index_r_earth-1, 2], part_r[i, index_r_earth, 2] )
-            print(height_locs[i])
-            print(np.min(distances[i, indices[i, 1] - 1:]))
         else:
+            index_r_earth = np.min(np.where(distances[i, :] < height_locs[i]))
+            distances_interpolation = np.linspace(distances[i, index_r_earth-1], distances[i, index_r_earth], num=100)
+            print(index_r_earth)
+            #print(part_r)
+            x_interpolation = np.linspace(part_r[i, index_r_earth-1, 0], part_r[i, index_r_earth, 0], num=100 )
+            y_interpolation = np.linspace(part_r[i, index_r_earth-1, 1], part_r[i, index_r_earth, 1], num=100 )
+            z_interpolation = np.linspace(part_r[i, index_r_earth-1, 2], part_r[i, index_r_earth, 2], num=100 )
+
+            index_interpolation = find_nearest_index(distances_interpolation, height_locs[i])
+
+
+            xyz_absorb[i, 0] = x_interpolation[index_interpolation]
+            xyz_absorb[i, 1] = y_interpolation[index_interpolation]
+            xyz_absorb[i, 2] = z_interpolation[index_interpolation]
+
+            #print(height_locs[i])
+            #print(np.min(distances[i, indices[i, 0]-1 : indices[i, 1]]))
+            #print(distances_interpolation)
+            #print(find_nearest_index(distances_interpolation, height_locs[i]))
+            #print(np.min(distances[i, indices[i, 1] - 1:]))
             counter2 += 1
+            print('total counter =' + str(counter1 + counter2))
+        print('the next indices to be used')
+        print(indices[i+1, :])
+        print('next locations where ')
+        print(np.where(distances[i+1, :] < height_locs[i+1]))
+
     print('hitting earth')
     print(counter1)
     print('nothittingearth')
     print(counter2)
+
+    print(xyz_absorb)
