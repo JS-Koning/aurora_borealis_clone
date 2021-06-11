@@ -522,10 +522,11 @@ def location_absorption(part_r, height_locs, indices):
         if np.where(distances[i, indices[i, 0]-1 : indices[i, 1]] < height_locs[i])[0].size == 0:
             # find the lowest point
             xyz_absorb[i, :] = part_r[i, indices[i, 1]]
+            #xyz_absorb[i, :] = np.array([0, 0, 0])
             counter1 += 1
         else:
             #distances_interpolation = np.linspace(distances[i, index_r_earth-1], distances[i, index_r_earth], num=100)
-            indice_overall_partial = np.min(np.where(distances[i, indices[i, 0]-1 : indices[i, 1]] > height_locs[i])[0])
+            indice_overall_partial = np.min(np.where(distances[i, indices[i, 0]-1 : indices[i, 1]] < height_locs[i])[0])
             indice_overall = indice_overall_partial + indices[i, 0]-1
 
             distances_interpolation = np.linspace(distances[i, indice_overall], distances[i, indice_overall+1], num=100)
