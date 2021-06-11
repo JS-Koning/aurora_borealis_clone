@@ -59,7 +59,7 @@ save_data_points = round(3 * 1E-5/dt)
 
 """Post-processing settings"""
 # Should the relevant particles be saved
-do_save_stripped_data = True
+do_save_stripped_data = False
 # Should the relevant particles be loaded
 do_load_stripped_data = True
 # Should aurora data be generated
@@ -167,7 +167,8 @@ def main():
 
         # Define all velocity factors using Gamma/Maxwell distribution
         # https://link.springer.com/content/pdf/10.1186/BF03352005.pdf
-        target_energy_all = np.random.gamma(peak_target_energy / gamma_target_energy, gamma_target_energy, [particles_y, particles_z])
+        target_energy_all = np.random.gamma(peak_target_energy / gamma_target_energy,
+                                            gamma_target_energy, [particles_y, particles_z])
 
         velocity_factor_all = np.sqrt(target_energy_all / (0.5 * sim.m_electron / sim.q_charge))
         velocity_factor_all /= (minimum_v + maximum_v) / 2.0
@@ -219,11 +220,20 @@ def main():
                     # Simulate particle
                     if multi_threading:
                         # Multi-threaded simulation
-                        future = executor.submit(sim.simulate, r_init, v_init, charge_factor*charge_factor2, mass_factor, dt, time_steps, acceleration_region, velocity_factor, interpolation_strength, save_reduced, save_data_points, print_simulation_initialization, print_simulation_progress, z)
+                        future = executor.submit(sim.simulate, r_init, v_init, charge_factor*charge_factor2,
+                                                 mass_factor, dt, time_steps, acceleration_region,
+                                                 velocity_factor, interpolation_strength, save_reduced,
+                                                 save_data_points, print_simulation_initialization,
+                                                 print_simulation_progress, z)
                         futures.append(future)
                     else:
                         # Single-threaded simulation
-                        r_save_data, v_save_data, z2 = sim.simulate(r_init, v_init, charge_factor*charge_factor2, mass_factor, dt, time_steps, acceleration_region, velocity_factor, interpolation_strength, save_reduced, save_data_points, print_simulation_initialization, print_simulation_progress, z)
+                        r_save_data, v_save_data, z2 = sim.simulate(r_init, v_init, charge_factor*charge_factor2,
+                                                                    mass_factor, dt, time_steps, acceleration_region,
+                                                                    velocity_factor, interpolation_strength,
+                                                                    save_reduced, save_data_points,
+                                                                    print_simulation_initialization,
+                                                                    print_simulation_progress, z)
 
                         particles_r[z, :, :] = r_save_data
                         particles_v[z, :, :] = v_save_data
@@ -272,27 +282,25 @@ def main():
 
         if do_load_stripped_data:
             print("Loading stripped data...")
-            file_str = 'Datasets/DataStripped_t' + str(time) + 'dt' + str(dt) + \
-                          'n' + str(particles_y*particles_z) + ".h5"
-            part_r, part_v, indices = utils.load_relevant_data(file_str, relevant_upper_bound_altitude, relevant_lower_bound_altitude, particles_y ,
-                                         time, dt, particles_y * particles_z)
-
-            #print(indices[:, 1])
-            print(part_r[0][0])
-            lenind = indices[:, 1] - indices[:, 0]
+            file_str = 'Datasets/DataStripped_t' + str(time) + 'dt' + str(dt) + 'n' \
+                       + str(particles_y*particles_z) + ".h5"
+            part_r, part_v, indices = utils.load_relevant_data(file_str, relevant_upper_bound_altitude,
+                                                               relevant_lower_bound_altitude, particles_y,
+                                                               time, dt, particles_y * particles_z)
             indices = indices.astype(int)
-            #xarr = arange(np.max(lenind))
+
             distances = np.linalg.norm(part_r, axis=2)
             velocities = np.linalg.norm(part_v, axis=2)
-            energies = 0.5 * sim.m_electron * velocities**2 / (sim.q_charge*1000) # in keV
-            print(indices[:, 1] - indices[:, 0])
-            print(np.max(energies))
+            energies = 0.5 * sim.m_electron * velocities**2 / (sim.q_charge*1000)  # in keV
+
             if do_create_aurora:
                 heightlocs = utils.gasses_absorbtion(energies, indices)
                 print(heightlocs)
                 #print(len(heightlocs))
                 utils.location_absorption(part_r, heightlocs, indices)
 
+                height_locs = utils.gasses_absorbtion(energies, indices)
+                utils.location_absorption(part_r, height_locs, indices)
             else:
                 print('not simulating aurora')
             for i in range(len(distances[:, 0])):
@@ -300,24 +308,22 @@ def main():
             plt.show()
             for i in range(len(velocities[:, 0])):
                 plt.plot(velocities[i, indices[i, 0]: indices[i, 1]])
+            plt.show()
+            for i in range(len(energies[:, 0])):
+                plt.plot(energies[i, indices[i, 0]: indices[i, 1]])
+            plt.show()
 
-
-            #plt.show()
-            #for i in range(len(energies[:, 0])):
-            #    plt.plot(energies[i, indices[i, 0]: indices[i, 1]])
-            #plt.show()
-            #print(part_v)
+            # print(part_v)
             # Plot 3D Earth
-            #fig, ax = utils.plot_earth(plot_simple, plot_earth_resolution)
+            # fig, ax = utils.plot_earth(plot_simple, plot_earth_resolution)
             # Plot relevant trajectories
-            #for z in range(len(part_r)):
+            # for z in range(len(part_r)):
             #    r_data = part_r[z]
             #    v_data = part_r[z]
-                # Plot particle trajectory
+            #    # Plot particle trajectory
             #    if r_data[-1, 0] ** 2 + r_data[-1, 1] ** 2 + r_data[-1, 2] ** 2 < region_of_interest ** 2:
-                    # Only plot when end-point is closer to than 3 Earth-radia (ignore deflected particles)
+            #        # Only plot when end-point is closer to than 3 Earth-radia (ignore deflected particles)
             #        utils.plot_3d(ax, r_data, plot_near_earth)
-
 
         # Load data
         # Filter useful trajectories (within 1.1-Earth Radius till 1.01-Earth-Radius)
@@ -358,7 +364,8 @@ def main():
                 # Plot relevant trajectories
                 for z in range(len(r_dataset)):
                     r_data = r_dataset[z]
-                    v_data = v_dataset[z]
+                    # v_data = v_dataset[z]
+
                     # Plot particle trajectory
                     if r_data[-1, 0] ** 2 + r_data[-1, 1] ** 2 + r_data[-1, 2] ** 2 < plot_region_of_interest ** 2:
                         # Only plot when end-point is closer to than 3 Earth-radia (ignore deflected particles)
@@ -400,9 +407,9 @@ def main():
             for i in range(len(velocities[:, 0])):
                 plt.plot(velocities[i, :])
             plt.show()
-            print("mean", np.mean(velocities[:,-1]))
-            print("max", np.max(velocities[:,-1]))
-            print("min", np.min(velocities[:,-1]))
+            print("mean", np.mean(velocities[:, -1]))
+            print("max", np.max(velocities[:, -1]))
+            print("min", np.min(velocities[:, -1]))
 
         if show_animation:
             # Plot 3D Earth for animation
