@@ -284,8 +284,7 @@ def main():
             print("Loading stripped data...")
             file_str = 'Datasets/DataStripped_t' + str(time) + 'dt' + str(dt) + 'n' \
                        + str(particles_y*particles_z) + ".h5"
-            part_r, part_v, indices = utils.load_relevant_data(file_str, relevant_upper_bound_altitude,
-                                                               relevant_lower_bound_altitude, particles_y)
+            part_r, part_v, indices = utils.load_relevant_data(file_str)
             indices = indices.astype(int)
 
             distances = np.linalg.norm(part_r, axis=2)
@@ -293,12 +292,12 @@ def main():
             energies = 0.5 * sim.m_electron * velocities**2 / (sim.q_charge*1000)  # in keV
 
             if do_create_aurora:
-                heightlocs = utils.gasses_absorption(energies, indices)
+                heightlocs = utils.gasses_absorption(energies)
                 print(heightlocs)
-                #print(len(heightlocs))
+                # print(len(heightlocs))
                 utils.location_absorption(part_r, heightlocs, indices)
 
-                height_locs = utils.gasses_absorption(energies, indices)
+                height_locs = utils.gasses_absorption(energies)
                 utils.location_absorption(part_r, height_locs, indices)
             else:
                 print('not simulating aurora')

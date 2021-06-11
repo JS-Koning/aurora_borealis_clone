@@ -4,7 +4,7 @@ from numba import jit
 """Constants and parameters"""
 # Radius of Earth [m]
 # https://en.wikipedia.org/wiki/Earth_radius
-# IUGG mean radius R_1
+# 'IUGG' mean radius R_1
 r_earth = 6371008.7714
 
 # Mass of proton [kg]
