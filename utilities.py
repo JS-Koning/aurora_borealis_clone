@@ -149,6 +149,7 @@ def plot_3d_animation(fig, ax, data, close):
 
     # animation function.  This will be called sequentially with the frame number
     def animate(i):
+        print(i/frame_count)
         # we'll step two time-steps per frame.  This leads to nice results.
         time_steps = data.shape[1]
         #i = (5 * i) % data.shape[1]
@@ -165,7 +166,7 @@ def plot_3d_animation(fig, ax, data, close):
             # stick lines
             # stick_line.set_data(xx,zz)
             # stick_line.set_3d_properties(yy)
-        ax.view_init(30, (i+1)*360/frame_count)
+        ax.view_init(30, (i+1)*360/frame_count/10)
         fig.canvas.draw()
         return lines + pts
 
@@ -330,7 +331,7 @@ def load_datafile(file_name):
     return particles_r, particles_v
 
 
-def save_relevant_data(savestring, cutoff_high, cutoff_low, particles_y):
+def save_relevant_data(cutoff_high, cutoff_low, particles_y, time, dt, particles_total, data_points):
     """
     Find the indices of the nearest values of cutoff_high, and cutoff_low
     disregards data that is not of interest, saves the stripped data to a file
@@ -349,58 +350,54 @@ def save_relevant_data(savestring, cutoff_high, cutoff_low, particles_y):
 
     """
 
-    save_string = 'Datasets/stripped_' + savestring + str(cutoff_low) + '_' + str(cutoff_high) + '.h5'
+    save_string = 'Datasets/DataStripped_t' + str(time) + 'dt' + str(dt) + \
+                               'n' + str(particles_total) + ".h5"
 
     earth_distance = cutoff_high
 
-    save_particles_stripped_r = np.zeros((1,30000, 3))
-    save_particles_stripped_v = np.zeros((1,30000, 3))
-    save_usefull_indices = np.zeros((1,2))
+    save_particles_stripped_r = np.zeros((1, data_points, 3))
+    save_particles_stripped_v = np.zeros((1, data_points, 3))
+    save_useful_indices = np.zeros((1, 2))
 
     for i in range(particles_y):
-
-        filestr = 'Datasets/Data_t0.001dt1e-09n32400y' + str(i)+'.h5'
-        #print(filestr)
-        particles_r, particles_v = load_datafile(filestr)
+        file_str = 'Datasets/Data_t' + str(time) + 'dt' + str(dt) + \
+                               'n' + str(particles_total) + 'y' + str(i)+ '.h5'
+        particles_r, particles_v = load_datafile(file_str)
 
         distances = np.linalg.norm(particles_r, axis=2)
         velocities = np.linalg.norm(particles_v, axis=2)
 
-        mins = distances.min(axis=1)
-        usefull_indices = np.where(mins < earth_distance)
-        data_within_range = distances[usefull_indices[0]]
-        #print(data_within_range.shape)
-        #print(usefull_indices[0])
-        #print(data_within_range)
-        #print(usefull_indices)
+        minimal_distances = distances.min(axis=1)
+        useful_indices = np.where(minimal_distances < earth_distance)
+        data_within_range = distances[useful_indices[0]]
 
-        cutoff_indices = np.zeros((len(usefull_indices[0]), 2))
-        for j in range(len(usefull_indices[0])):
-            cutoff_indices[j, 0] = (find_nearest_index(data_within_range[i, :], cutoff_high))
-            cutoff_indices[j, 1] = (find_nearest_index(data_within_range[i, :], cutoff_low))
-            # height_data[i, :] = data_within_range[i, cutoff_indices_high : cutoff_indices_low]
+        cutoff_indices = np.zeros((len(useful_indices[0]), 2))
+
+        for ii in range(len(useful_indices[0])):
+            cutoff_indices[ii, 0] = (find_nearest_index(data_within_range[ii, :], cutoff_high))
+            cutoff_indices[ii, 1] = (find_nearest_index(data_within_range[ii, :], cutoff_low))
+
         cutoff_indices = cutoff_indices.astype(int)
-        #print(cutoff_indices)
-        stripped_particles_r = particles_r[usefull_indices[0], :, :]
-        stripped_particles_v = particles_v[usefull_indices[0], :, :]
+
+        stripped_particles_r = particles_r[useful_indices[0], :, :]
+        stripped_particles_v = particles_v[useful_indices[0], :, :]
 
         save_particles_stripped_r = np.concatenate((save_particles_stripped_r, stripped_particles_r))
         save_particles_stripped_v = np.concatenate((save_particles_stripped_v, stripped_particles_v))
-        save_usefull_indices = np.concatenate((save_usefull_indices, cutoff_indices))
-        #print(cutoff_indices)
-        #print(save_particles_stripped_r)
+        save_useful_indices = np.concatenate((save_useful_indices, cutoff_indices))
+
     save_particles_stripped_r = np.delete(save_particles_stripped_r, [0], axis=0)
     save_particles_stripped_v = np.delete(save_particles_stripped_v, [0], axis=0)
-    save_usefull_indices = np.delete(save_usefull_indices, [0], axis=0)
+    save_useful_indices = np.delete(save_useful_indices, [0], axis=0)
+
+    create_datafile_3(save_string, save_particles_stripped_r, save_particles_stripped_v, save_useful_indices)
+
+    print('Shape of the indices array found: ' + str(save_useful_indices.shape))
+
+    return True
 
 
-    create_datafile_3(save_string, save_particles_stripped_r, save_particles_stripped_v, save_usefull_indices)
-    #print(save_usefull_indices)
-    print('shape of the indices array found = '+ str(save_usefull_indices.shape))
-    return # save_particles_stripped_r, save_particles_stripped_v, save_usefull_indices
-
-
-def load_relevant_data(file_name, cutoff_high, cutoff_low, particles_y):
+def load_relevant_data(file_name, cutoff_high, cutoff_low, particles_y, time, dt, particles_total):
     """
     This function loads datasets
 
@@ -423,7 +420,8 @@ def load_relevant_data(file_name, cutoff_high, cutoff_low, particles_y):
         cutoff indices of relevant data
     """
 
-    save_string = 'Datasets/stripped_' + file_name + str(cutoff_low) + '_' + str(cutoff_high) + '.h5'
+    save_string = 'Datasets/DataStripped_t' + str(time) + 'dt' + str(dt) + \
+                  'n' + str(particles_total) + ".h5"
     
     # read data set(s)
     hf = h5py.File(save_string, 'r')
@@ -439,7 +437,6 @@ def load_relevant_data(file_name, cutoff_high, cutoff_low, particles_y):
 
     hf.close()
 
-    # numpy.append(tauarray, specific_heat, axis=None) #to add it to array created in line 2 of this 'block'
     return particles_r, particles_v, indices
 
 
