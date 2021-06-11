@@ -6,15 +6,17 @@ import h5py
 import simulation as sim
 from matplotlib import animation, rc
 
-def axisEqual3D(ax):
+
+def axis_equal_3d(ax):
     # A hack to make 3D aspect ratio equal in all axis
     extents = np.array([getattr(ax, 'get_{}lim'.format(dim))() for dim in 'xyz'])
-    sz = extents[:,1] - extents[:,0]
+    sz = extents[:, 1] - extents[:, 0]
     centers = np.mean(extents, axis=1)
     maxsize = max(abs(sz))
     r = maxsize/2
     for ctr, dim in zip(centers, 'xyz'):
         getattr(ax, 'set_{}lim'.format(dim))(ctr - r, ctr + r)
+
 
 def rotate(x, y, z):
     # y - axis rotation https://nl.wikipedia.org/wiki/Rotatiematrix
@@ -23,8 +25,8 @@ def rotate(x, y, z):
 
     rotation_matrix = np.array(
         [[np.cos(theta), 0, np.sin(theta)],
-        [0, 1, 0],
-        [-np.sin(theta), 0, np.cos(theta)]]
+         [0, 1, 0],
+         [-np.sin(theta), 0, np.cos(theta)]]
     )
 
     x2 = x * rotation_matrix[0][0] + y * rotation_matrix[0][1] + z * rotation_matrix[0][2]
@@ -41,8 +43,10 @@ def plot_earth(simple, resolution):
 
     Parameters
     ----------
-    Boolean: True/False
+    simple: boolean
     If false, gives a normal translucent sphere, if True sphere is replaced by a translucent perfect spherical earth
+    resolution: int
+    Resolution of Earth texture if not simple. Preferably given in powers of 2; (max: 1024)
 
     Returns
     -------
@@ -69,7 +73,7 @@ def plot_earth(simple, resolution):
     y = r * np.outer(np.sin(lons), np.cos(lats)).T
     z = r * np.outer(np.ones(np.size(lons)), np.sin(lats)).T
 
-    x,y,z = rotate(x,y,z)
+    x, y, z = rotate(x, y, z)
 
     if simple:
         ax.plot_surface(
@@ -118,7 +122,7 @@ def plot_3d(ax, data, close):
         ax.axes.set_zlim3d(bottom=-6, top=6)
     else:
         # Plot completely
-        axisEqual3D(ax)
+        axis_equal_3d(ax)
 
     plt.show(block=False)
 
@@ -139,10 +143,10 @@ def plot_3d_animation(fig, ax, data, close):
         for line, pt in zip(lines, pts):
             # trajectory lines
             line.set_data([], [])
-            #line.set_3d_properties([])
+            # line.set_3d_properties([])
             # points
             pt.set_data([], [])
-            #pt.set_3d_properties([])
+            # pt.set_3d_properties([])
         return lines + pts
 
     frame_count = 300
@@ -152,7 +156,7 @@ def plot_3d_animation(fig, ax, data, close):
         print(i/frame_count)
         # we'll step two time-steps per frame.  This leads to nice results.
         time_steps = data.shape[1]
-        #i = (5 * i) % data.shape[1]
+        # i = (5 * i) % data.shape[1]
         i = int(7*time_steps/8 + int((i+1) / frame_count * time_steps/8))
 
         for line, pt, xi in zip(lines, pts, data):
@@ -178,7 +182,7 @@ def plot_3d_animation(fig, ax, data, close):
         ax.axes.set_zlim3d(bottom=-plot_size, top=plot_size)
     else:
         # Plot completely
-        axisEqual3D(ax)
+        axis_equal_3d(ax)
 
     ani = animation.FuncAnimation(fig, animate, init_func=init, frames=frame_count, interval=30, blit=True)
     plt.show(block=False)
@@ -210,9 +214,9 @@ def initialize_loc_vel(init_velocity, distance_earth, offset_y, offset_z):
     particles only moving in x position
     distance_earth is the starting distance in the x_direction, offset is based, and scaled, in yz plane
     """
-    if init_velocity<300000:
+    if init_velocity < 300000:
         print('init_velocity is too low')
-    elif init_velocity>500000:
+    elif init_velocity > 500000:
         print('init_velocity is too high')
     else:
         velocity = np.array([init_velocity, 0, 0])
@@ -339,19 +343,28 @@ def save_relevant_data(cutoff_high, cutoff_low, particles_y, time, dt, particles
     Parameters
     ----------
     cutoff_high: float
-        finds the nearest index of cutoff value
+        Finds the nearest index of cutoff value
     cutoff_low: float
-        finds the nearest index of cutoff value
+        Finds the nearest index of cutoff value
+    particles_y: ndarray
+        Y-grid coordinates
+    time: float/int
+        Simulation time
+    dt: float
+        Simulation time-step size
+    particles_total: int
+        Total amount of particles
+    data_points: int
+        Amount of data-points in saved data
+
     Returns
     -------
-    dataset: h5
-        Dataset of the trajectories with indices closest to cutoff strings.
-
-
+    True: boolean
+        If saved successfully
     """
 
     save_string = 'Datasets/DataStripped_t' + str(time) + 'dt' + str(dt) + \
-                               'n' + str(particles_total) + ".h5"
+                  'n' + str(particles_total) + ".h5"
 
     earth_distance = cutoff_high
 
@@ -361,11 +374,11 @@ def save_relevant_data(cutoff_high, cutoff_low, particles_y, time, dt, particles
 
     for i in range(particles_y):
         file_str = 'Datasets/Data_t' + str(time) + 'dt' + str(dt) + \
-                               'n' + str(particles_total) + 'y' + str(i)+ '.h5'
+                               'n' + str(particles_total) + 'y' + str(i) + '.h5'
         particles_r, particles_v = load_datafile(file_str)
 
         distances = np.linalg.norm(particles_r, axis=2)
-        velocities = np.linalg.norm(particles_v, axis=2)
+        # velocities = np.linalg.norm(particles_v, axis=2)
 
         minimal_distances = distances.min(axis=1)
         useful_indices = np.where(minimal_distances < earth_distance)
@@ -397,7 +410,7 @@ def save_relevant_data(cutoff_high, cutoff_low, particles_y, time, dt, particles
     return True
 
 
-def load_relevant_data(file_name, cutoff_high, cutoff_low, particles_y, time, dt, particles_total):
+def load_relevant_data(file_name, cutoff_high, cutoff_low, particles_y):
     """
     This function loads datasets
 
@@ -419,12 +432,9 @@ def load_relevant_data(file_name, cutoff_high, cutoff_low, particles_y, time, dt
     indices:
         cutoff indices of relevant data
     """
-
-    save_string = 'Datasets/DataStripped_t' + str(time) + 'dt' + str(dt) + \
-                  'n' + str(particles_total) + ".h5"
     
     # read data set(s)
-    hf = h5py.File(save_string, 'r')
+    hf = h5py.File(file_name, 'r')
 
     particles_r = hf.get('particles_positions')
     particles_r = np.array(particles_r)

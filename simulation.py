@@ -1,9 +1,7 @@
 import numpy as np
 from numba import jit
-import utilities as utils
 
 """Constants and parameters"""
-
 # Radius of Earth [m]
 # https://en.wikipedia.org/wiki/Earth_radius
 # IUGG mean radius R_1
@@ -85,7 +83,9 @@ def runge_kutta_4(charge, mass, dt, r_particle_last_1, v_particle_last_1):
 
 
 @jit(nopython=True)
-def simulate(r_particle_init, v_particle_init, charge, mass, dt, time_steps, acceleration_region, velocity_factor, interpolation_strength, save_reduced, save_data_points, print_simulation_initialization, print_simulation_progress, current_id):
+def simulate(r_particle_init, v_particle_init, charge, mass, dt, time_steps, acceleration_region, velocity_factor,
+             interpolation_strength, save_reduced, save_data_points, print_simulation_initialization,
+             print_simulation_progress, current_id):
     # Initialize
     if print_simulation_initialization:
         print("Simulating single particle with [m =", mass, " q =", charge,
@@ -95,8 +95,8 @@ def simulate(r_particle_init, v_particle_init, charge, mass, dt, time_steps, acc
     v_particle = np.zeros((time_steps, 3))
 
     # Initial condition
-    r_particle[0, :] = r_particle_init / r_earth # now in m (only vary y,z => grid)
-    v_particle[0, :] = v_particle_init # min 300, max 750 km/s near Earth
+    r_particle[0, :] = r_particle_init / r_earth  # now in m (only vary y,z => grid)
+    v_particle[0, :] = v_particle_init  # min 300, max 750 km/s near Earth
 
     mass = m_electron * mass
     charge = -q_charge * charge
@@ -110,7 +110,7 @@ def simulate(r_particle_init, v_particle_init, charge, mass, dt, time_steps, acc
         r_particle[i, :], v_particle[i, :] = runge_kutta_4(charge, mass, dt, r_particle[i-1, :], v_particle[i-1, :])
 
         # Van Allen Belt simulation altering
-        current_distance = r_particle[i,0]**2 + r_particle[i,1]**2 + r_particle[i,2]**2
+        current_distance = r_particle[i, 0]**2 + r_particle[i, 1]**2 + r_particle[i, 2]**2
         if 1.0**2 < current_distance < acceleration_region**2:
             # Particle is inside Van Allen radiation belt
             # Particle's velocity is increased due to plasma wave interaction
@@ -123,7 +123,7 @@ def simulate(r_particle_init, v_particle_init, charge, mass, dt, time_steps, acc
             v_particle[i, :] *= v_particle_target_abs / v_particle_abs
 
     # Find index where simulation ends
-    r_particle_radial = np.sqrt(r_particle[:,0]**2 + r_particle[:,1]**2 + r_particle[:,2]**2)
+    r_particle_radial = np.sqrt(r_particle[:, 0]**2 + r_particle[:, 1]**2 + r_particle[:, 2]**2)
     index = np.argmin(r_particle_radial)
 
     if save_reduced:
@@ -145,24 +145,3 @@ def simulate(r_particle_init, v_particle_init, charge, mass, dt, time_steps, acc
         return r_save_data, v_save_data, current_id
     else:
         return r_particle, v_particle, current_id
-
-
-def incoming_probabilities(p_electron, p_proton, p_alpha, partnums):
-
-    masses = np.array([m_electron, m_proton, 4*m_proton])
-    charges = np.array([-1, 1, 2]) *q_charge
-    
-    rands = np.random.rand(partnums)
-    masses_arr = np.zeros(partnums)
-    charges_arr = np.zeros(partnums)
-    for i in range(len(masses_arr)):
-        if rands[i] < p_proton:
-            masses_arr[i] = masses[1]
-            charges_arr[i] = charges[1]
-        elif rands[i] > 1-p_alpha:
-            masses_arr[i] = masses[2]
-            charges_arr[i] = charges[2]
-        else:
-            masses_arr[i] = masses[0]
-            charges_arr[i] = charges[0]
-    return masses_arr, charges_arr

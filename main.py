@@ -285,8 +285,7 @@ def main():
             file_str = 'Datasets/DataStripped_t' + str(time) + 'dt' + str(dt) + 'n' \
                        + str(particles_y*particles_z) + ".h5"
             part_r, part_v, indices = utils.load_relevant_data(file_str, relevant_upper_bound_altitude,
-                                                               relevant_lower_bound_altitude, particles_y,
-                                                               time, dt, particles_y * particles_z)
+                                                               relevant_lower_bound_altitude, particles_y)
             indices = indices.astype(int)
 
             distances = np.linalg.norm(part_r, axis=2)
