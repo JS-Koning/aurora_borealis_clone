@@ -526,20 +526,27 @@ def location_absorption(part_r, height_locs, indices):
     counter2 = 0
     xyz_absorb = np.zeros((len(distances[:, 0]), 3))
     for i in range(len(distances[:, 0])):
-        #print(indices[i, 0] - indices[i, 1])
-        #print(indices[i, 1])
-        #print(np.where(np.min(distances[i, indices[i, 0] : indices[i, 1]] < height_locs[i]))[0])
-        if np.min(distances[i, indices[i, 0]-1 : indices[i, 1]]) > height_locs[i]:
+
+        print(indices[i, 1])
+
+
+        print('total counter =' + str(counter1 + counter2))
+        if np.where(distances[i, indices[i, 0]-1 : indices[i, 1]] < height_locs[i])[0].size == 0:
             # find the lowest point
+            xyz_absorb[i, :] = part_r[i, indices[i, 1]]
             counter1 += 1
         else:
-            index_r_earth = np.min(np.where(distances[i, :] < height_locs[i]))
-            distances_interpolation = np.linspace(distances[i, index_r_earth-1], distances[i, index_r_earth], num=100)
-            print(index_r_earth)
-            #print(part_r)
-            x_interpolation = np.linspace(part_r[i, index_r_earth-1, 0], part_r[i, index_r_earth, 0], num=100 )
-            y_interpolation = np.linspace(part_r[i, index_r_earth-1, 1], part_r[i, index_r_earth, 1], num=100 )
-            z_interpolation = np.linspace(part_r[i, index_r_earth-1, 2], part_r[i, index_r_earth, 2], num=100 )
+            #distances_interpolation = np.linspace(distances[i, index_r_earth-1], distances[i, index_r_earth], num=100)
+            indice_overall_partial = np.min(np.where(distances[i, indices[i, 0]-1 : indices[i, 1]] > height_locs[i])[0])
+            indice_overall = indice_overall_partial + indices[i, 0]-1
+
+            distances_interpolation = np.linspace(distances[i, indice_overall], distances[i, indice_overall+1], num=100)
+
+            #index_r_earth = find_nearest_index(distances_interpolation, height_locs[i])
+
+            x_interpolation = np.linspace(part_r[i, indice_overall-1, 0], part_r[i, indice_overall, 0], num=100 )
+            y_interpolation = np.linspace(part_r[i, indice_overall-1, 1], part_r[i, indice_overall, 1], num=100 )
+            z_interpolation = np.linspace(part_r[i, indice_overall-1, 2], part_r[i, indice_overall, 2], num=100 )
 
             index_interpolation = find_nearest_index(distances_interpolation, height_locs[i])
 
@@ -548,21 +555,16 @@ def location_absorption(part_r, height_locs, indices):
             xyz_absorb[i, 1] = y_interpolation[index_interpolation]
             xyz_absorb[i, 2] = z_interpolation[index_interpolation]
 
-            #print(height_locs[i])
-            #print(np.min(distances[i, indices[i, 0]-1 : indices[i, 1]]))
-            #print(distances_interpolation)
-            #print(find_nearest_index(distances_interpolation, height_locs[i]))
-            #print(np.min(distances[i, indices[i, 1] - 1:]))
-            counter2 += 1
-            print('total counter =' + str(counter1 + counter2))
-        print('the next indices to be used')
-        print(indices[i+1, :])
-        print('next locations where ')
-        print(np.where(distances[i+1, :] < height_locs[i+1]))
 
-    print('hitting earth')
-    print(counter1)
+            counter2 += 1
+
+
+
     print('nothittingearth')
+    print(counter1)
+    print('hitting earth')
     print(counter2)
 
-    print(xyz_absorb)
+
+
+    return xyz_absorb

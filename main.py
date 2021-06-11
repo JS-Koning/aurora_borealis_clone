@@ -63,7 +63,7 @@ do_save_stripped_data = False
 # Should the relevant particles be loaded
 do_load_stripped_data = True
 # Should aurora data be generated
-do_create_aurora = False
+do_create_aurora = True
 # What is the upper bound for auroras (in R_Earth) ||| Approximately 640 km
 relevant_upper_bound_altitude = 1.1
 # What is the lower bound for auroras (in R_Earth) ||| Approximately 64 km
@@ -287,30 +287,38 @@ def main():
             part_r, part_v, indices = utils.load_relevant_data(file_str, relevant_upper_bound_altitude,
                                                                relevant_lower_bound_altitude, particles_y)
             indices = indices.astype(int)
-
+            print(indices[288, :])
+            print(indices[289, :])
+            print(indices[290, :])
             distances = np.linalg.norm(part_r, axis=2)
             velocities = np.linalg.norm(part_v, axis=2)
             energies = 0.5 * sim.m_electron * velocities**2 / (sim.q_charge*1000)  # in keV
 
             if do_create_aurora:
                 heightlocs = utils.gasses_absorbtion(energies, indices)
-                print(heightlocs)
+                print(len(heightlocs))
                 #print(len(heightlocs))
                 utils.location_absorption(part_r, heightlocs, indices)
 
                 height_locs = utils.gasses_absorbtion(energies, indices)
-                utils.location_absorption(part_r, height_locs, indices)
+                print(indices.shape)
+                xyz = utils.location_absorption(part_r, height_locs, indices)
+                print(xyz)
+                fig = plt.figure()
+                ax = fig.add_subplot(projection='3d')
+                ax.scatter(xyz[:, 0], xyz[:, 1], xyz[:, 2])
+                plt.show()
             else:
                 print('not simulating aurora')
-            for i in range(len(distances[:, 0])):
-                plt.plot(distances[i, indices[i, 0]: indices[i, 1] + 10])
-            plt.show()
-            for i in range(len(velocities[:, 0])):
-                plt.plot(velocities[i, indices[i, 0]: indices[i, 1]])
-            plt.show()
-            for i in range(len(energies[:, 0])):
-                plt.plot(energies[i, indices[i, 0]: indices[i, 1]])
-            plt.show()
+            #for i in range(len(distances[:, 0])):
+            #    plt.plot(distances[i, indices[i, 0]: indices[i, 1] + 10])
+            #plt.show()
+            #for i in range(len(velocities[:, 0])):
+            #    plt.plot(velocities[i, indices[i, 0]: indices[i, 1]])
+            #plt.show()
+            #for i in range(len(energies[:, 0])):
+            #    plt.plot(energies[i, indices[i, 0]: indices[i, 1]])
+            #plt.show()
 
             # print(part_v)
             # Plot 3D Earth
