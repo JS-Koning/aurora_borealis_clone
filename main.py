@@ -303,9 +303,10 @@ def main():
                 print(indices.shape)
                 xyz = utils.location_absorption(part_r, height_locs, indices)
                 print(xyz)
-                fig = plt.figure()
-                ax = fig.add_subplot(projection='3d')
-                ax.scatter(xyz[:, 0], xyz[:, 1], xyz[:, 2])
+                #fig = plt.figure()
+                #ax = fig.add_subplot(projection='3d')
+                fig, ax = utils.plot_earth(plot_simple, plot_earth_resolution)
+                ax.scatter(xyz[:, 0], xyz[:, 1], xyz[:, 2], c="green")
                 plt.show()
             else:
                 print('not simulating aurora')
