@@ -410,7 +410,7 @@ def save_relevant_data(cutoff_high, cutoff_low, particles_y, time, dt, particles
     return True
 
 
-def load_relevant_data(file_name, cutoff_high, cutoff_low, particles_y):
+def load_relevant_data(file_name):
     """
     This function loads datasets
 
@@ -418,10 +418,6 @@ def load_relevant_data(file_name, cutoff_high, cutoff_low, particles_y):
     ----------
     file_name: str
         File name for new dataset file
-    cutoff_high, cutoff_low: float
-        used to find file of the required dataset
-    particles_y: int
-        used to find file of the required dataset.
 
     Returns
     -------
@@ -450,16 +446,8 @@ def load_relevant_data(file_name, cutoff_high, cutoff_low, particles_y):
     return particles_r, particles_v, indices
 
 
-def plot_testing(particles_r, particles_v, indices):
-    distances = np.linalg.norm(particles_r, axis=2)
-    velocities = np.linalg.norm(particles_v, axis=2)
-    for i in range(len(particles_r[:,0])):
-        
-        plt.plot()
-
-
-def probability_absorbtion():
-    energies = np.array([0.4, 0.5, 0.55, 1.0, 1.65, 5.6 , 40, 300])
+def probability_absorption():
+    energies = np.array([0.4, 0.5, 0.55, 1.0, 1.65, 5.6, 40, 300])
     heights = np.array([270, 250, 210, 170, 150, 120, 100, 75])
     plt.plot(energies, heights)
     plt.show()
@@ -467,14 +455,15 @@ def probability_absorbtion():
 
 def lognormal_dist(sigma, mu, start, stop):
     x = np.linspace(start, stop, 1000)
-    pdf = np.exp(-(np.log(x) - mu)**2 / (2 * sigma**2))/ (x * sigma * np.sqrt(2 * np.pi))
-    plt.plot(x,pdf)
+    pdf = np.exp(-(np.log(x) - mu)**2 / (2 * sigma**2)) / (x * sigma * np.sqrt(2 * np.pi))
+    plt.plot(x, pdf)
     plt.show()
     return
 
-def gasses_absorbtion(energies, indices):
+
+def gasses_absorption(energies):
     """
-    Gasses data only works for 5 km height eacht time.
+    Gasses data only works for 5 km height each time.
     returns distribution % of each gas at the given height
 
     Input:
@@ -482,12 +471,12 @@ def gasses_absorbtion(energies, indices):
     returns:
 
     """
-    file_data = np.genfromtxt('atm_dataset.txt') #https://ccmc.gsfc.nasa.gov/modelweb/models/msis_vitmo.php
+    file_data = np.genfromtxt('atm_dataset.txt')  # https://ccmc.gsfc.nasa.gov/modelweb/models/msis_vitmo.php
     height = file_data[:, 0]
     n2 = file_data[:, 1]
     o2 = file_data[:, 2]
 
-    cutoff_array = np.array([0.4, 0.5, 0.65, 0.1, 1.65, 5.6, 40, 300])  #1-s2.0-0032063363902526-main%20(2).pdf
+    cutoff_array = np.array([0.4, 0.5, 0.65, 0.1, 1.65, 5.6, 40, 300])  # 1-s2.0-0032063363902526-main%20(2).pdf
     cutoff_height = np.array([210, 190, 170, 150, 130, 110, 90, 70])
 
     part_cutoffindx = np.zeros(len(energies[:, 0]))
@@ -506,16 +495,15 @@ def gasses_absorbtion(energies, indices):
     for i in range(len(part_cutoffindx)):
         particles_num = n2[index_nasa_cutoff[i]:] + o2[index_nasa_cutoff[i]:]
         part_cum = np.cumsum(particles_num[::-1] / sum(particles_num))
-        #print(part_cum)
+        # print(part_cum)
         rng = np.random.rand(1)
 
         final_index_height[i] = np.max(np.where(part_cum < rng))
 
-
-
     heights_final = height[len(height) - final_index_height.astype(int)]
 
     return heights_final
+
 
 def location_absorption(part_r, height_locs, indices):
     distances = np.linalg.norm(part_r, axis=2)
