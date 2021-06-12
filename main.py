@@ -13,9 +13,9 @@ from os import path
 # Initial trajectory simulation
 do_simulation = False
 # Particle absorption simulation
-do_post_processing = True
+do_post_processing = False
 # Data processing
-do_data_processing = False
+do_data_processing = True
 
 """Logging settings"""
 print_simulation_progress = False
@@ -72,18 +72,20 @@ relevant_lower_bound_altitude = 1.01
 """Plot settings"""
 # Should a simple Earth model be drawn instead of a (heavier) realistic one
 plot_simple = False
-# Resolution of Earth texture ||| Multiple of 2 up until 1024
-plot_earth_resolution = 64
-# Resolution of Earth texture ||| Multiple of 2 up until 1024
-animation_earth_resolution = 64
-# Should animations be shown
-show_animation = True
-# Should animations be saved after being shown
-save_animation = True
 # Should plots and animations be rendered near Earth
 plot_near_earth = True
 # Which trajectories should be plotted ||| Particles ending up in approximately 640km (1.1 Earth-radia) are interesting
 plot_region_of_interest = 1.1
+# Resolution of Earth texture ||| Multiple of 2 up until 1024
+plot_earth_resolution = 64
+# Should animations be shown
+show_animation = False
+# Resolution of Earth texture ||| Multiple of 2 up until 1024
+animation_earth_resolution = 64
+# Should animations be saved after being shown
+save_animation = True
+# Should aurora be shown
+show_aurora = True
 
 """Particle settings"""
 # Factors to initialize (relativistic) charged particle with || UNUSED
@@ -271,8 +273,10 @@ def main():
     if do_post_processing:
         # Begin post-processing
         print("Post-processing...")
+
         if do_save_stripped_data:
             print("Saving stripped data...")
+
             if save_reduced:
                 utils.save_relevant_data(relevant_upper_bound_altitude, relevant_lower_bound_altitude, particles_y,
                                          time, dt, particles_y*particles_z, save_data_points)
@@ -282,53 +286,29 @@ def main():
 
         if do_load_stripped_data:
             print("Loading stripped data...")
+
             file_str = 'Datasets/DataStripped_t' + str(time) + 'dt' + str(dt) + 'n' \
                        + str(particles_y*particles_z) + ".h5"
-            part_r, part_v, indices = utils.load_relevant_data(file_str)
-            indices = indices.astype(int)
-            distances = np.linalg.norm(part_r, axis=2)
-            velocities = np.linalg.norm(part_v, axis=2)
-            energies = 0.5 * sim.m_electron * velocities**2 / (sim.q_charge*1000)  # in keV
+            if path.exists(file_str):
+                part_r, part_v, indices = utils.load_relevant_data(file_str)
+                indices = indices.astype(int)
+                # distances = np.linalg.norm(part_v, axis=2)
+                velocities = np.linalg.norm(part_v, axis=2)
+                energies = 0.5 * sim.m_electron * velocities**2 / (sim.q_charge*1000)  # in keV
 
-            if do_create_aurora:
-                height_locs = utils.gasses_absorption(energies)
-                xyz = utils.location_absorption(part_r, height_locs, indices)
-                print(np.average(np.linalg.norm(xyz, axis=1)))
-                # plotting the particle interactions
-                fig, ax = utils.plot_earth(plot_simple, plot_earth_resolution)
-                ax.scatter(xyz[:, 0], xyz[:, 1], xyz[:, 2], c="green")
-                plt.show()
+                if do_create_aurora:
+                    file_str_new = 'Datasets/DataProcessed_t' + str(time) + 'dt' + str(dt) + 'n' \
+                               + str(particles_y * particles_z) + ".h5"
+
+                    height_locs = utils.gasses_absorption(energies)
+                    xyz = utils.location_absorption(part_r, height_locs, indices)
+
+                    part_r_new, part_v_new = utils.post_process(part_r, part_v, xyz)
+                    utils.create_datafile(file_str_new, part_r_new, part_v_new)
+
+                    print("Created post-processed datasets")
             else:
-                print('not simulating aurora')
-            #for i in range(len(distances[:, 0])):
-            #    plt.plot(distances[i, indices[i, 0]: indices[i, 1] + 10])
-            #plt.show()
-            #for i in range(len(velocities[:, 0])):
-            #    plt.plot(velocities[i, indices[i, 0]: indices[i, 1]])
-            #plt.show()
-            #for i in range(len(energies[:, 0])):
-            #    plt.plot(energies[i, indices[i, 0]: indices[i, 1]])
-            #plt.show()
-
-            # print(part_v)
-            # Plot 3D Earth
-            # fig, ax = utils.plot_earth(plot_simple, plot_earth_resolution)
-            # Plot relevant trajectories
-            # for z in range(len(part_r)):
-            #    r_data = part_r[z]
-            #    v_data = part_r[z]
-            #    # Plot particle trajectory
-            #    if r_data[-1, 0] ** 2 + r_data[-1, 1] ** 2 + r_data[-1, 2] ** 2 < region_of_interest ** 2:
-            #        # Only plot when end-point is closer to than 3 Earth-radia (ignore deflected particles)
-            #        utils.plot_3d(ax, r_data, plot_near_earth)
-
-        # Load data
-        # Filter useful trajectories (within 1.1-Earth Radius till 1.01-Earth-Radius)
-        # Trace back trajectories to stop at absorption altitudes
-        # Save differences in data (to get smaller file sizes...)
-        else:
-            pass
-        pass
+                print("Could not find stripped dataset...")
 
     # Data-processing for showing results
     if do_data_processing:
@@ -403,7 +383,7 @@ def main():
             plt.figure()
             for i in range(len(velocities[:, 0])):
                 plt.plot(velocities[i, :])
-            plt.show()
+            plt.show(block=False)
             print("mean", np.mean(velocities[:, -1]))
             print("max", np.max(velocities[:, -1]))
             print("min", np.min(velocities[:, -1]))
@@ -419,6 +399,17 @@ def main():
                        'n' + str(particles_y * particles_z) + ".gif"
                 # Save animation
                 utils.save_animation(file_str, ani)
+
+        if show_aurora:
+            file_str_new = 'Datasets/DataProcessed_t' + str(time) + 'dt' + str(dt) + 'n' \
+                           + str(particles_y * particles_z) + ".h5"
+            r_dataset_new, v_dataset_new = utils.load_datafile(file_str_new)
+            # print(np.average(np.linalg.norm(xyz, axis=1)))
+
+            # plotting the particle interactions
+            fig, ax = utils.plot_earth(plot_simple, plot_earth_resolution)
+            ax.scatter(r_dataset_new[:, -1, 0], r_dataset_new[:, -1, 1], r_dataset_new[:, -1, 2], c="green")
+            plt.show(block=False)
 
     # End program timer
     time_elapsed = timeit.default_timer() - time_start

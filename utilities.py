@@ -540,13 +540,22 @@ def location_absorption(part_r, height_locs, indices):
 
             counter2 += 1
 
-
-
-    print('Number of particles by definition not hitting maximum absorption height')
-    print(counter1)
-    print('Number of particles breaching below maximum absorption height')
-    print(counter2)
-
-
+    print('Number of particles by definition not hitting maximum absorption height', counter1)
+    print('Number of particles breaching below maximum absorption height', counter2)
 
     return xyz_absorb
+
+
+def post_process(part_r, part_v, xyz):
+    part_r_new = np.copy(part_r)
+    part_v_new = np.copy(part_v)
+    for i in range(len(part_r_new)):
+        aurora_height = np.linalg.norm(xyz[i], axis=0)
+        for ii in range(len(part_r_new[i, :, :])):
+            if aurora_height > np.linalg.norm(part_r_new[i, ii, :], axis=0):
+                # Alter heights
+                part_r_new[i, ii, :] = xyz[i]
+                # Alter velocities
+                part_v_new[i, ii, :] = np.array([0.0, 0.0, 0.0])
+
+    return part_r_new, part_v_new
