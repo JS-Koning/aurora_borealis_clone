@@ -463,18 +463,19 @@ def lognormal_dist(sigma, mu, start, stop):
 
 def gasses_absorption(energies):
     """
-    Gasses data only works for 5 km height each time.
-    returns distribution % of each gas at the given height
+    Gasses data only works for 10 km height each time.
+    returns the height that each particle SHOULD be absorbed at a minimum.
+    Data is taken at a geomagnetic pole summer soltice, nighttime. According to the current simulation orientation.
 
     Input:
     height: int
     returns:
 
     """
-    file_data = np.genfromtxt('atm_dataset.txt')  # https://ccmc.gsfc.nasa.gov/modelweb/models/msis_vitmo.php
+    file_data = np.genfromtxt('atomicoxygen_nitrogen.txt')  # https://ccmc.gsfc.nasa.gov/modelweb/models/msis_vitmo.php
     height = file_data[:, 0]
-    n2 = file_data[:, 1]
-    o2 = file_data[:, 2]
+    ox = file_data[:, 1]
+    n2 = file_data[:, 2]
 
     cutoff_array = np.array([0.4, 0.5, 0.65, 0.1, 1.65, 5.6, 40, 300])  # 1-s2.0-0032063363902526-main%20(2).pdf
     cutoff_height = np.array([210, 190, 170, 150, 130, 110, 90, 70])
@@ -493,9 +494,8 @@ def gasses_absorption(energies):
 
     final_index_height = np.zeros(length)
     for i in range(len(part_cutoffindx)):
-        particles_num = n2[index_nasa_cutoff[i]:] + o2[index_nasa_cutoff[i]:]
+        particles_num = n2[index_nasa_cutoff[i]:] + ox[index_nasa_cutoff[i]:]
         part_cum = np.cumsum(particles_num[::-1] / sum(particles_num))
-        # print(part_cum)
         rng = np.random.rand(1)
 
         final_index_height[i] = np.max(np.where(part_cum < rng))
@@ -506,52 +506,45 @@ def gasses_absorption(energies):
 
 
 def location_absorption(part_r, height_locs, indices):
+    # Initalization and some basic computations
     distances = np.linalg.norm(part_r, axis=2)
     indices = indices.astype(int)
-    r_earth_func = 6371
+    r_earth_func = sim.r_earth/1000
     height_locs = height_locs/r_earth_func + 1
     counter1 = 0
     counter2 = 0
     xyz_absorb = np.zeros((len(distances[:, 0]), 3))
+
     for i in range(len(distances[:, 0])):
 
-        print(indices[i, 1])
-
-
-        print('total counter =' + str(counter1 + counter2))
-        if np.where(distances[i, indices[i, 0]-1 : indices[i, 1]] < height_locs[i])[0].size == 0:
+        if np.where(distances[i, indices[i, 0]-1: indices[i, 1]] < height_locs[i])[0].size == 0:
             # find the lowest point
             xyz_absorb[i, :] = part_r[i, indices[i, 1]]
-            #xyz_absorb[i, :] = np.array([0, 0, 0])
             counter1 += 1
         else:
-            #distances_interpolation = np.linspace(distances[i, index_r_earth-1], distances[i, index_r_earth], num=100)
+            # Particles that are going to be absorbed
             indice_overall_partial = np.min(np.where(distances[i, indices[i, 0]-1 : indices[i, 1]] < height_locs[i])[0])
             indice_overall = indice_overall_partial + indices[i, 0]-1
 
             distances_interpolation = np.linspace(distances[i, indice_overall], distances[i, indice_overall+1], num=100)
 
-            #index_r_earth = find_nearest_index(distances_interpolation, height_locs[i])
-
-            x_interpolation = np.linspace(part_r[i, indice_overall-1, 0], part_r[i, indice_overall, 0], num=100 )
-            y_interpolation = np.linspace(part_r[i, indice_overall-1, 1], part_r[i, indice_overall, 1], num=100 )
-            z_interpolation = np.linspace(part_r[i, indice_overall-1, 2], part_r[i, indice_overall, 2], num=100 )
+            x_interpolation = np.linspace(part_r[i, indice_overall-1, 0], part_r[i, indice_overall+1, 0], num=100 )
+            y_interpolation = np.linspace(part_r[i, indice_overall-1, 1], part_r[i, indice_overall+1, 1], num=100 )
+            z_interpolation = np.linspace(part_r[i, indice_overall-1, 2], part_r[i, indice_overall+1, 2], num=100 )
 
             index_interpolation = find_nearest_index(distances_interpolation, height_locs[i])
-
 
             xyz_absorb[i, 0] = x_interpolation[index_interpolation]
             xyz_absorb[i, 1] = y_interpolation[index_interpolation]
             xyz_absorb[i, 2] = z_interpolation[index_interpolation]
 
-
             counter2 += 1
 
 
 
-    print('nothittingearth')
+    print('Number of particles by definition not hitting maximum absorption height')
     print(counter1)
-    print('hitting earth')
+    print('Number of particles breaching below maximum absorption height')
     print(counter2)
 
 

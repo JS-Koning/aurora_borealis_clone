@@ -286,25 +286,15 @@ def main():
                        + str(particles_y*particles_z) + ".h5"
             part_r, part_v, indices = utils.load_relevant_data(file_str)
             indices = indices.astype(int)
-            print(indices[288, :])
-            print(indices[289, :])
-            print(indices[290, :])
             distances = np.linalg.norm(part_r, axis=2)
             velocities = np.linalg.norm(part_v, axis=2)
             energies = 0.5 * sim.m_electron * velocities**2 / (sim.q_charge*1000)  # in keV
 
             if do_create_aurora:
-                heightlocs = utils.gasses_absorption(energies)
-                print(len(heightlocs))
-                #print(len(heightlocs))
-                utils.location_absorption(part_r, heightlocs, indices)
-
                 height_locs = utils.gasses_absorption(energies)
-                print(indices.shape)
                 xyz = utils.location_absorption(part_r, height_locs, indices)
-                print(xyz)
-                #fig = plt.figure()
-                #ax = fig.add_subplot(projection='3d')
+                print(np.average(np.linalg.norm(xyz, axis=1)))
+                # plotting the particle interactions
                 fig, ax = utils.plot_earth(plot_simple, plot_earth_resolution)
                 ax.scatter(xyz[:, 0], xyz[:, 1], xyz[:, 2], c="green")
                 plt.show()
