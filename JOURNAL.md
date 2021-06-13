@@ -172,6 +172,7 @@
 ## Week 3
 1. Answer on feedback on last week's progress update:
 
+
 2. General progress feedback:
    
    - Finalized code
@@ -215,7 +216,7 @@
    - None that will be implemented before the final submission
    
 5. Summary
-   - Multiple new animations are created to focus on presentations, a speedup is present to match emperical/theoretical data. An example is shown below.
+   - Multiple new animations are created to focus on presentations, a speedup is present to match emperical/theoretical data. An example is shown below. An animation is higly useful to allow visualization of velocity.
    
      ![](Images/Animation_t0.001dt1e-08n32400.gif)
 
@@ -231,6 +232,9 @@
    
      ![](Images/Figure_37.png)
 
+   - Probabilities are present in absorption, these are shown in the plot below, including uncertainties. However, they are hard to inteprent, not all particles are able to absorb due to not having their end trajectories penetrating earth, we have som stray particles, and the absorption is not a continous process, but a discrete one (due to the emperical data used as atmospheric data). The particles with zero uncertainty are the particles that get deflected back into the van Allen belt.
+     ![](Images/Figure_errorbars.png)
+     
    - For correctness checks, we will refer to the presentation that will be uploaded tomorrow. These will have some visualization comparing the obtained data from the simulation to other simulations, or real life empirical data.
    
 6. Questions
