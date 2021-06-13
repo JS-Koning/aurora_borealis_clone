@@ -3,6 +3,8 @@ import numpy as np
 import simulation as sim
 import utilities as utils
 import matplotlib.pyplot as plt
+import matplotlib.colors as mc
+import colorsys
 import timeit
 import concurrent.futures as thread
 import psutil
@@ -459,7 +461,29 @@ def main():
 
             # energies vs. altitude
             plt.figure()
-            plt.scatter(energies, altitudes)
+
+            # altitude_up = (relevant_upper_bound_altitude-1.0) * sim.r_earth / 1000
+            # altitude_down = (relevant_lower_bound_altitude - 1.0) * sim.r_earth / 1000
+            altitude_up = np.max(altitudes)
+            altitude_down = np.min(altitudes)
+
+            for i in range(len(altitudes)):
+                # uniform distribution
+                color_factor = (altitudes[i]-altitude_down)/(altitude_up-altitude_down)
+                # push green to lower altitude
+                color_factor = np.power(color_factor, 0.45)
+
+                # color = plt.cm.jet(color_factor)
+                color = plt.cm.rainbow(color_factor)
+                # color = plt.cm.turbo(color_factor)
+                # color = plt.cm.nipy_spectral(color_factor)
+
+                # Darken colors
+                color = colorsys.rgb_to_hls(*mc.to_rgb(color))
+                # 1.5 = darker, 0.5 = lighter
+                color = colorsys.hls_to_rgb(color[0], 1 - 1.05 * (1 - color[1]), color[2])
+
+                plt.scatter(energies[i], altitudes[i], c=color)
             plt.show(block=False)
 
     # End program timer
