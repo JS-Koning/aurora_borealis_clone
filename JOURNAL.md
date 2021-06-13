@@ -173,6 +173,16 @@
 1. Answer on feedback on last week's progress update:
 
 2. General progress feedback:
+   
+   - Finalized code
+      - Finalized simulation datasets
+         - Added datasets of particles hitting earth trajectories
+      - Added method for absorption of the electrons in the atmosphere.
+           - This however, was created without scattering and secondary absorption. Instead, it was gathered using data obtained from the nasa.gov site, focussing on a single absorption of an electron. 
+            - We have found a [great paper](http://pedrinho.cs.uwaterloo.ca/~gvgbaran/cgpub/aurora1.pdf) for absorption, however it does not allow implementation in our current simulation setup.
+      - Finalized most images
+         - Some more might be created for the presentation
+      
     - Limitations of our simulation.
         - Our simulations has a serious limitation. In the Van Allen belt, our particles do not speed up, and start to slow down even. The reason why: It is due to the limitation in the physics part of the the code. What is wrong: We did not take in to account 'plasma wave interactions'. Some reading up we did are the following articles: 
             - [general Wikipedia](https://en.wikipedia.org/wiki/Two-stream_instability)
@@ -184,4 +194,44 @@
             - Not only plasma waves do this, but also electrons without ions (with different speeds and/or densities etc), its a very complex interaction with multiple components.
         - How are we planning to fix this?
             - Well, we're not really going to fix this physically. The mathematics are too complex to implement in the given timeframe.
-            - What we're instead going to do is simply boosting the velocities of particles 'stuck' in the Van Allen belt to a high velocity, and seeing what is going to happen to them. Is this physically correct? Not really, but it is the result of a physical phenomena. We did read that, the speedboost of the electrons are in line with the existing magnetic field lines and/or equator lines (__need more clarification__). So, in our simulation we're skipping a simulation-step and using direct results of other papers.  
+            - ~~What we're instead going to do is simply boosting the velocities of particles 'stuck' in the Van Allen belt to a high velocity, and seeing what is going to happen to them. Is this physically correct? Not really, but it is the result of a physical phenomena. We did read that, the speedboost of the electrons are in line with the existing magnetic field lines. So, in our simulation we're skipping a simulation-step and using direct results of other papers.~~
+            - Were going to speed up the particles that we know are going to hit the earth. Skipping the exact physical phenomena, and going directly to (approximated) result of the other papers.
+   
+
+
+
+
+3. Review (w.r.t.) original plan
+    - [x] Create animated trajectories
+    - [x] Implement electron absorption
+    - [ ] Create plots for latitude vs. absorption
+      - [x] Added 3D view instead
+    - [ ] Initial ReadMe file
+    - [x] Finalization of project
+    - [x] Start preparing presentation
+    - [x] Other points mentioned in point 4 (points of improvement)
+   
+4. Things that need improvement
+   - None that will be implemented before the final submission
+   
+5. Summary
+   - Multiple new animations are created to focus on presentations, a speedup is present to match emperical/theoretical data. An example is shown below.
+   
+     ![](Images/Animation_t0.001dt1e-08n32400.gif)
+
+   - Absorption is implemented, the results are shown in the figure below. Note that a simplified method is applied. The scale and complexity is simply too high to implement the method we wanted to.
+   
+     ![](Images/Figure_38.png)
+
+   - A visual view of this absorption view, including colors and heights are shown in the figure below.
+   
+     ![](Images/Figure_36.png)
+
+   - This can be summarized in the following bar chart. Here, the y-axis is the height of absorption
+   
+     ![](Images/Figure_37.png)
+
+   - For correctness checks, we will refer to the presentation that will be uploaded tomorrow. These will have some visualization comparing the obtained data from the simulation to other simulations, or real life empirical data.
+   
+6. Questions
+    - None
