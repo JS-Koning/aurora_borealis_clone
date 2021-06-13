@@ -171,7 +171,11 @@
 
 ## Week 3
 1. Answer on feedback on last week's progress update:
-
+   - There is one main message I would like to give to you: right now, you are mainly talking about particle trajectories and animations. Those are fine and nice to see, but it's not a very systematic analysis. Make sure you do a proper statistical analysis. Not sure what is usually done, but you could do things such as probability of reflection depending on the incoming offset, or incoming particles per latitude, etc.
+      - We thought about probability of reflection, but due to the size of our system and the 'size' of an electron this was not possible.
+      - However, we did do some analysis for the incoming particles combined with their height of absorption to create aurora's. However, during our research we found out that this is extremely complex in the given timeframe, thus we introduced a simplified method.
+      - We could still create a lattitude based figure, this would not take much time to implement due to the method we used to create datasets.
+         - Currently, we do have a 3D plot of the locations where the particle would collide with other particles in the atmosphere. This might not be systematic enough for a report, but it is in our opinion the best visualization for a presentation. However, as stated before, a latitude based figure could be created+presented as well.
 
 2. General progress feedback:
    
