@@ -86,9 +86,9 @@ plot_region_of_interest = 1.1
 # Resolution of Earth texture ||| Multiple of 2 up until 1024
 plot_earth_resolution = 64
 # Should animations be shown
-show_animation = True
+show_animation = False
 # Resolution of Earth texture ||| Multiple of 2 up until 1024
-animation_earth_resolution = 512
+animation_earth_resolution = 64
 # Should animations be saved after being shown
 save_animation = True
 # Should aurora be shown
