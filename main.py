@@ -16,9 +16,9 @@ matplotlib_axes_logger.setLevel('ERROR')
 # Initial trajectory simulation
 do_simulation = False
 # Particle absorption simulation
-do_post_processing = True
+do_post_processing = False
 # Data processing
-do_data_processing = False
+do_data_processing = True
 
 """Logging settings"""
 print_simulation_progress = False
