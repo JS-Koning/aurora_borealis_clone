@@ -584,3 +584,46 @@ def post_process(part_r, part_v, xyz):
                 part_v_new[i, ii, :] = np.array([0.0, 0.0, 0.0])
 
     return part_r_new, part_v_new
+
+def create_plot_errorbar(data, title, x_label, y_label, y_data=None, legend=None, error_bar=None):
+    """
+        This function creates plots
+
+        Parameters
+        ----------
+        data: ndarray
+            X-data
+        title: str
+            Text to put above the image
+        x_label: str
+            X-axis label
+        y_label: str
+            Y-axis label
+        y_data: ndarray
+            Y-data
+        legend: [str]
+            Legends for multiple curves
+        error_bar: ndarray
+            Error-data
+
+        Returns
+        -------
+        True: boolean
+            Success
+    """
+
+    plt.figure()
+    plt.title(title)
+    plt.xlabel(x_label)
+    plt.ylabel(y_label)
+    if y_data is not None and error_bar is None:
+        plt.plot(data, y_data, 'o')
+    elif y_data is not None and error_bar is not None:
+        plt.errorbar(data, y_data, yerr=error_bar, fmt='o', capsize=3.5, ecolor='red', elinewidth=1.2, ms=2.5,
+                     mec='black')
+    else:
+        plt.plot(data)
+    if legend is not None:
+        plt.legend(legend)
+    plt.show(block=False)
+    return True

@@ -16,9 +16,9 @@ matplotlib_axes_logger.setLevel('ERROR')
 # Initial trajectory simulation
 do_simulation = False
 # Particle absorption simulation
-do_post_processing = False
+do_post_processing = True
 # Data processing
-do_data_processing = True
+do_data_processing = False
 
 """Logging settings"""
 print_simulation_progress = False
@@ -66,7 +66,9 @@ do_save_stripped_data = False
 # Should the relevant particles be loaded
 do_load_stripped_data = True
 # Should aurora data be generated
-do_create_aurora = True
+do_create_aurora = False
+# Should errorbars be created
+do_create_errorbars = True
 # What is the upper bound for auroras (in R_Earth) ||| Approximately 640 km
 relevant_upper_bound_altitude = 1.1
 # What is the lower bound for auroras (in R_Earth) ||| Approximately 64 km
@@ -92,7 +94,7 @@ animation_earth_resolution = 64
 # Should animations be saved after being shown
 save_animation = True
 # Should aurora be shown
-show_aurora = True
+show_aurora = False
 
 """Particle settings"""
 # Factors to initialize (relativistic) charged particle with || UNUSED
@@ -317,6 +319,18 @@ def main():
                     utils.create_datafile(file_str_new, part_r_new, part_v_new)
 
                     print("Created post-processed datasets")
+                if do_create_errorbars:
+                    iterations = 100
+                    xyz_iterated = np.zeros((iterations, len(energies), 3))
+                    for k in range(iterations):
+                        xyz_iterated[k, :, :] = utils.location_absorption(part_r, utils.gasses_absorption(energies), indices)
+                    distances_errorbar = np.linalg.norm(xyz_iterated, axis=2)
+                    errorbar = np.std(distances_errorbar, axis=0)
+                    print(errorbar.shape)
+                    print(distances_errorbar.shape)
+                    print(energies.shape)
+                    utils.create_plot_errorbar(energies[:, -1], 'errorbar of absorption energy', 'Energy', 'Height', y_data=np.average(distances_errorbar, axis=0), error_bar=errorbar)
+
             else:
                 print("Could not find stripped dataset...")
 
