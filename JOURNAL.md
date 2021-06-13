@@ -236,7 +236,7 @@
    
      ![](Images/Figure_37.png)
 
-   - Probabilities are present in absorption, these are shown in the plot below, including uncertainties. However, they are hard to inteprent, not all particles are able to absorb due to not having their end trajectories penetrating earth, we have som stray particles, and the absorption is not a continous process, but a discrete one (due to the emperical data used as atmospheric data). The particles with zero uncertainty are the particles that get deflected back into the van Allen belt.
+   - Probabilities are present in absorption, these are shown in the plot below, including uncertainties. However, they are hard to inteprent, not all particles are able to absorb due to not having their end trajectories penetrating earth, we have som stray particles, and the absorption is not a continous process, but a discrete one (due to the emperical data used as atmospheric data). The particles with zero uncertainty are the particles that get deflected back into the van Allen belt, these particles however do not have a zero uncertainty of absorption in the real life scenario.
      ![](Images/Figure_errorbars.png)
      
    - For correctness checks, we will refer to the presentation that will be uploaded tomorrow. These will have some visualization comparing the obtained data from the simulation to other simulations, or real life empirical data.
