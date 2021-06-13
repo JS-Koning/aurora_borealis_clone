@@ -86,9 +86,9 @@ plot_region_of_interest = 1.1
 # Resolution of Earth texture ||| Multiple of 2 up until 1024
 plot_earth_resolution = 64
 # Should animations be shown
-show_animation = False
+show_animation = True
 # Resolution of Earth texture ||| Multiple of 2 up until 1024
-animation_earth_resolution = 64
+animation_earth_resolution = 512
 # Should animations be saved after being shown
 save_animation = True
 # Should aurora be shown
@@ -410,6 +410,8 @@ def main():
             plt.figure()
             for i in range(len(velocities[:, 0])):
                 plt.plot(velocities[i, :])
+            plt.xlabel("Time [$ns$]")
+            plt.ylabel("Velocity [$\\frac{m}{s}$]")
             plt.show(block=False)
             print("Mean velocity", np.mean(velocities[:, -1]))
             print("Max velocity", np.max(velocities[:, -1]))
@@ -427,11 +429,35 @@ def main():
                 # Save animation
                 utils.save_animation(file_str, ani)
 
+            file_str_new = 'Datasets/DataProcessed_t' + str(time) + 'dt' + str(dt) + 'n' \
+                           + str(particles_y * particles_z) + ".h5"
+            r_dataset_new, v_dataset_new = utils.load_datafile(file_str_new)
+            # Plot 3D Earth for animation
+            fig, ax = utils.plot_earth(plot_simple, animation_earth_resolution)
+            # Plot 3D particle trajectories with trail
+            ani = utils.plot_3d_animation(fig, ax, r_dataset_new, plot_near_earth)
+            if save_animation:
+                # Define file name for animation
+                file_str = 'Images/AnimationProcessed_t' + str(time) + 'dt' + str(dt) + \
+                           'n' + str(particles_y * particles_z) + ".gif"
+                # Save animation
+                utils.save_animation(file_str, ani)
+
         if show_aurora:
             file_str_new = 'Datasets/DataProcessed_t' + str(time) + 'dt' + str(dt) + 'n' \
                            + str(particles_y * particles_z) + ".h5"
             r_dataset_new, v_dataset_new = utils.load_datafile(file_str_new)
-            # print(np.average(np.linalg.norm(xyz, axis=1)))
+
+            velocities_full = np.linalg.norm(v_dataset_new, axis=2)
+            velocities = np.max(np.linalg.norm(v_dataset_new, axis=2), axis=1)
+            heights = np.linalg.norm(r_dataset_new[:, -1, :], axis=1)
+            altitudes = (heights - 1.0) * sim.r_earth / 1000  # in km
+            energies = 0.5 * sim.m_electron * velocities ** 2 / (sim.q_charge * 1000)  # in keV
+
+            # altitude_up = (relevant_upper_bound_altitude-1.0) * sim.r_earth / 1000
+            # altitude_down = (relevant_lower_bound_altitude - 1.0) * sim.r_earth / 1000
+            altitude_up = np.max(altitudes)
+            altitude_down = np.min(altitudes)
 
             # plotting the particle interactions
             fig, ax = utils.plot_earth(plot_simple, plot_earth_resolution)
@@ -443,31 +469,30 @@ def main():
             for z in range(len(r_dataset_new)):
                 r_data = r_dataset_new[z]
                 # Plot particle trajectory
-                if r_data[-1, 0] ** 2 + r_data[-1, 1] ** 2 + r_data[-1, 2] ** 2 < plot_region_of_interest ** 2:
-                    # Only plot when end-point is closer to than 3 Earth-radia (ignore deflected particles)
-                    utils.plot_3d(ax, r_data, plot_near_earth)
+                utils.plot_3d(ax, r_data, plot_near_earth)
             ax.scatter(r_dataset_new[:, -1, 0], r_dataset_new[:, -1, 1], r_dataset_new[:, -1, 2], c="green")
+
             plt.show(block=False)
 
-            velocities = np.max(np.linalg.norm(v_dataset_new, axis=2), axis=1)
-            heights = np.linalg.norm(r_dataset_new[:, -1, :], axis=1)
-            altitudes = (heights - 1.0) * sim.r_earth / 1000  # in km
-            energies = 0.5 * sim.m_electron * velocities ** 2 / (sim.q_charge * 1000)  # in keV
             print("Average altitude:", np.mean(altitudes))
 
             # velocity vs. aurora height
             plt.figure()
             plt.scatter(velocities, heights)
+            plt.ylabel("Distance from Earth's center [$R_{Earth}$]")
+            plt.xlabel("Velocity [$\\frac{m}{s}$]")
+            plt.show(block=False)
+
+            # velocity vs. time
+            plt.figure()
+            for i in range(len(velocities_full[:, 0])):
+                plt.plot(velocities_full[i, :])
+            plt.xlabel("Time [$ns$]")
+            plt.ylabel("Velocity [$\\frac{m}{s}$]")
             plt.show(block=False)
 
             # energies vs. altitude
             plt.figure()
-
-            # altitude_up = (relevant_upper_bound_altitude-1.0) * sim.r_earth / 1000
-            # altitude_down = (relevant_lower_bound_altitude - 1.0) * sim.r_earth / 1000
-            altitude_up = np.max(altitudes)
-            altitude_down = np.min(altitudes)
-
             for i in range(len(altitudes)):
                 # uniform distribution
                 color_factor = (altitudes[i]-altitude_down)/(altitude_up-altitude_down)
@@ -485,12 +510,37 @@ def main():
                 color = colorsys.hls_to_rgb(color[0], 1 - 1.05 * (1 - color[1]), color[2])
 
                 plt.scatter(energies[i], altitudes[i], c=color)
+
+            plt.ylabel("Altitude [$km$]")
+            plt.xlabel("Energy [$keV$]")
             plt.show(block=False)
 
             plt.figure()
             # per 20 km-ish
             plt.hist(altitudes, orientation='horizontal', bins=29)
+            plt.ylabel("Altitude [$km$]")
+            plt.xlabel("Amount of particles [#]")
             plt.show(block=False)
+
+            # plotting the particle interactions (fancy)
+            fig, ax = utils.plot_earth(plot_simple, plot_earth_resolution)
+            for z in range(len(r_dataset_new)):
+                r_data = r_dataset_new[z]
+                # uniform distribution
+                color_factor = (altitudes[z] - altitude_down) / (altitude_up - altitude_down)
+                # push green to lower altitude
+                color_factor = np.power(color_factor, 0.45)
+
+                # color = plt.cm.jet(color_factor)
+                color = plt.cm.rainbow(color_factor)
+                # color = plt.cm.turbo(color_factor)
+                # color = plt.cm.nipy_spectral(color_factor)
+
+                # Darken colors
+                color = colorsys.rgb_to_hls(*mc.to_rgb(color))
+                # 1.5 = darker, 0.5 = lighter
+                color = colorsys.hls_to_rgb(color[0], 1 - 1.05 * (1 - color[1]), color[2])
+                ax.scatter(r_data[-1, 0], r_data[-1, 1], r_data[-1, 2], c=color)
 
     # End program timer
     time_elapsed = timeit.default_timer() - time_start

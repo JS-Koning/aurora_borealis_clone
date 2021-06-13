@@ -82,9 +82,9 @@ def plot_earth(simple, resolution):
         ax.plot_surface(
             x, y, z, rstride=1, cstride=1, facecolors=bm, alpha=0.75, linewidth=0)
 
-    ax.set_xlabel("x")
-    ax.set_ylabel("y")
-    ax.set_zlabel("z")
+    ax.set_xlabel("X [$R_{Earth}$]")
+    ax.set_ylabel("Y [$R_{Earth}$]")
+    ax.set_zlabel("Z [$R_{Earth}$]")
 
     plt.show(block=False)
 
@@ -157,7 +157,7 @@ def plot_3d_animation(fig, ax, data, close):
         # we'll step two time-steps per frame.  This leads to nice results.
         time_steps = data.shape[1]
         # i = (5 * i) % data.shape[1]
-        i = int(7*time_steps/8 + int((i+1) / frame_count * time_steps/8))
+        i = int(15*time_steps/16 + int((i+1) / frame_count * time_steps/16))
 
         for line, pt, xi in zip(lines, pts, data):
             x, y, z = xi[max(0, int(i-time_steps/40)):i].T
