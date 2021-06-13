@@ -69,6 +69,10 @@ relevant_upper_bound_altitude = 1.1
 # What is the lower bound for auroras (in R_Earth) ||| Approximately 64 km
 relevant_lower_bound_altitude = 1.01
 
+"""Data-processing settings"""
+# Use stripped data (speeds up)
+use_stripped_data = True
+
 """Plot settings"""
 # Should a simple Earth model be drawn instead of a (heavier) realistic one
 plot_simple = False
@@ -301,7 +305,10 @@ def main():
                                + str(particles_y * particles_z) + ".h5"
 
                     height_locs = utils.gasses_absorption(energies)
+                    print("Lowest height:", np.min(height_locs), "; Heighest height:", np.max(height_locs))
                     xyz = utils.location_absorption(part_r, height_locs, indices)
+                    print("Lowest height:", np.min(np.linalg.norm(xyz, axis=1)), "; Heighest height:",
+                          np.max(np.linalg.norm(xyz, axis=1)))
 
                     part_r_new, part_v_new = utils.post_process(part_r, part_v, xyz)
                     utils.create_datafile(file_str_new, part_r_new, part_v_new)
@@ -318,75 +325,92 @@ def main():
         # Plot 3D Earth for static 3D plot
         fig, ax = utils.plot_earth(plot_simple, plot_earth_resolution)
 
-        # Keep track of relevant particles amount
-        relevant_count = 0
-        # Keep track of relevant particles' grid coordinates
-        relevant_xy = []
-
-        # Iterate over Y-grid
-        for y in range(particles_y):
-            # Show progress
-            if (y+1) % max(1, int(particles_y / 10)) == 0:
-                print("Loading progress:", ("%.2f" % ((y+1) / particles_y * 100)), "%...")
-
-            # Filename of dataset to load
-            file_str = 'Datasets/Data_t' + str(time) + 'dt' + str(dt) + \
-                       'n' + str(particles_y * particles_z) + 'y' + str(y) + ".h5"
-
-            # Only load if dataset file exists
+        if use_stripped_data:
+            file_str = 'Datasets/DataStripped_t' + str(time) + 'dt' + str(dt) + 'n' \
+                       + str(particles_y * particles_z) + ".h5"
             if path.exists(file_str):
-                # Load dataset
-                r_dataset, v_dataset = utils.load_datafile(file_str)
-
-                # Plot relevant trajectories
-                for z in range(len(r_dataset)):
-                    r_data = r_dataset[z]
-                    # v_data = v_dataset[z]
-
+                r_relevant, v_relevant, indices = utils.load_relevant_data(file_str)
+                relevant_count = len(r_relevant)
+                indices = indices.astype(int)
+                for z in range(len(r_relevant)):
+                    r_data = r_relevant[z]
                     # Plot particle trajectory
                     if r_data[-1, 0] ** 2 + r_data[-1, 1] ** 2 + r_data[-1, 2] ** 2 < plot_region_of_interest ** 2:
                         # Only plot when end-point is closer to than 3 Earth-radia (ignore deflected particles)
                         utils.plot_3d(ax, r_data, plot_near_earth)
-                        # Add count of amount of relevant particles
-                        relevant_count += 1
-                        # Store Y- and Z-grid-coordinates
-                        relevant_xy.append([y, z])
             else:
-                print("File", file_str, "was not found...")
-
-        print("Relevant particles: ", relevant_count, "out of", (particles_y*particles_z), "(",
-              (relevant_count/particles_y/particles_z*100), "%)")
-
-        # Initialize relevant particles array
-        if save_reduced:
-            r_relevant = np.zeros([relevant_count, save_data_points, 3])
-            v_relevant = np.zeros([relevant_count, save_data_points, 3])
+                print("Stripped dataset not found")
         else:
-            r_relevant = np.zeros([relevant_count, time_steps, 3])
-            v_relevant = np.zeros([relevant_count, time_steps, 3])
+            # Keep track of relevant particles amount
+            relevant_count = 0
+            # Keep track of relevant particles' grid coordinates
+            relevant_xy = []
 
-        # Retrieve relevant particles only from all particles
-        for relevant_particle in range(relevant_count):
-            # Retrieve Y- and Z-grid-coordinates
-            y, z = relevant_xy[relevant_particle]
-            # File-name of dataset to load
-            file_str = 'Datasets/Data_t' + str(time) + 'dt' + str(dt) + \
-                       'n' + str(particles_y * particles_z) + 'y' + str(y) + ".h5"
-            # Load dataset using Y-grid-coordinate
-            r_dataset, v_dataset = utils.load_datafile(file_str)
-            # Load data using Z-grid-coordinate
-            r_relevant[relevant_particle, :, :] = r_dataset[z]
-            v_relevant[relevant_particle, :, :] = v_dataset[z]
+            # Iterate over Y-grid
+            for y in range(particles_y):
+                # Show progress
+                if (y+1) % max(1, int(particles_y / 10)) == 0:
+                    print("Loading progress:", ("%.2f" % ((y+1) / particles_y * 100)), "%...")
+
+                # Filename of dataset to load
+                file_str = 'Datasets/Data_t' + str(time) + 'dt' + str(dt) + \
+                           'n' + str(particles_y * particles_z) + 'y' + str(y) + ".h5"
+
+                # Only load if dataset file exists
+                if path.exists(file_str):
+                    # Load dataset
+                    r_dataset, v_dataset = utils.load_datafile(file_str)
+
+                    # Plot relevant trajectories
+                    for z in range(len(r_dataset)):
+                        r_data = r_dataset[z]
+                        # v_data = v_dataset[z]
+
+                        # Plot particle trajectory
+                        if r_data[-1, 0] ** 2 + r_data[-1, 1] ** 2 + r_data[-1, 2] ** 2 < plot_region_of_interest ** 2:
+                            # Only plot when end-point is closer to than 3 Earth-radia (ignore deflected particles)
+                            utils.plot_3d(ax, r_data, plot_near_earth)
+                            # Add count of amount of relevant particles
+                            relevant_count += 1
+                            # Store Y- and Z-grid-coordinates
+                            relevant_xy.append([y, z])
+                else:
+                    print("File", file_str, "was not found...")
+
+            print("Relevant particles: ", relevant_count, "out of", (particles_y*particles_z), "(",
+                  (relevant_count/particles_y/particles_z*100), "%)")
+
+            # Initialize relevant particles array
+            if save_reduced:
+                r_relevant = np.zeros([relevant_count, save_data_points, 3])
+                v_relevant = np.zeros([relevant_count, save_data_points, 3])
+            else:
+                r_relevant = np.zeros([relevant_count, time_steps, 3])
+                v_relevant = np.zeros([relevant_count, time_steps, 3])
+
+            # Retrieve relevant particles only from all particles
+            for relevant_particle in range(relevant_count):
+                # Retrieve Y- and Z-grid-coordinates
+                y, z = relevant_xy[relevant_particle]
+                # File-name of dataset to load
+                file_str = 'Datasets/Data_t' + str(time) + 'dt' + str(dt) + \
+                           'n' + str(particles_y * particles_z) + 'y' + str(y) + ".h5"
+                # Load dataset using Y-grid-coordinate
+                r_dataset, v_dataset = utils.load_datafile(file_str)
+                # Load data using Z-grid-coordinate
+                r_relevant[relevant_particle, :, :] = r_dataset[z]
+                v_relevant[relevant_particle, :, :] = v_dataset[z]
 
         if relevant_count != 0:
+            # distances = np.linalg.norm(r_relevant, axis=2)
             velocities = np.linalg.norm(v_relevant, axis=2)
             plt.figure()
             for i in range(len(velocities[:, 0])):
                 plt.plot(velocities[i, :])
             plt.show(block=False)
-            print("mean", np.mean(velocities[:, -1]))
-            print("max", np.max(velocities[:, -1]))
-            print("min", np.min(velocities[:, -1]))
+            print("Mean velocity", np.mean(velocities[:, -1]))
+            print("Max velocity", np.max(velocities[:, -1]))
+            print("Min velocity", np.min(velocities[:, -1]))
 
         if show_animation:
             # Plot 3D Earth for animation
@@ -409,6 +433,33 @@ def main():
             # plotting the particle interactions
             fig, ax = utils.plot_earth(plot_simple, plot_earth_resolution)
             ax.scatter(r_dataset_new[:, -1, 0], r_dataset_new[:, -1, 1], r_dataset_new[:, -1, 2], c="green")
+            plt.show(block=False)
+
+            # plotting the particle interactions with trajectories
+            fig, ax = utils.plot_earth(plot_simple, plot_earth_resolution)
+            for z in range(len(r_dataset_new)):
+                r_data = r_dataset_new[z]
+                # Plot particle trajectory
+                if r_data[-1, 0] ** 2 + r_data[-1, 1] ** 2 + r_data[-1, 2] ** 2 < plot_region_of_interest ** 2:
+                    # Only plot when end-point is closer to than 3 Earth-radia (ignore deflected particles)
+                    utils.plot_3d(ax, r_data, plot_near_earth)
+            ax.scatter(r_dataset_new[:, -1, 0], r_dataset_new[:, -1, 1], r_dataset_new[:, -1, 2], c="green")
+            plt.show(block=False)
+
+            velocities = np.max(np.linalg.norm(v_dataset_new, axis=2), axis=1)
+            heights = np.linalg.norm(r_dataset_new[:, -1, :], axis=1)
+            altitudes = (heights - 1.0) * sim.r_earth / 1000  # in km
+            energies = 0.5 * sim.m_electron * velocities ** 2 / (sim.q_charge * 1000)  # in keV
+            print("Average altitude:", np.mean(altitudes))
+
+            # velocity vs. aurora height
+            plt.figure()
+            plt.scatter(velocities, heights)
+            plt.show(block=False)
+
+            # energies vs. altitude
+            plt.figure()
+            plt.scatter(energies, altitudes)
             plt.show(block=False)
 
     # End program timer

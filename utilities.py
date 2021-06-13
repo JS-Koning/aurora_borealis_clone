@@ -518,8 +518,30 @@ def location_absorption(part_r, height_locs, indices):
     for i in range(len(distances[:, 0])):
 
         if np.where(distances[i, indices[i, 0]-1: indices[i, 1]] < height_locs[i])[0].size == 0:
-            # find the lowest point
-            xyz_absorb[i, :] = part_r[i, indices[i, 1]]
+            # find average point
+            index_average = int(np.round((indices[i,0] + indices[i,1]) / 2.0))
+            xyz_absorb[i, :] = part_r[i, index_average]
+
+            # error margin
+            delta = 0.001
+            passed = False
+
+            while not passed:
+                if np.linalg.norm(xyz_absorb[i], axis=0) < 1.01 - delta:
+                    print("Error 1", np.linalg.norm(xyz_absorb[i], axis=0))
+                    # find the highest point
+                    index_average -= 1
+                    xyz_absorb[i, :] = part_r[i, index_average]
+                    passed = False
+                elif np.linalg.norm(xyz_absorb[i], axis=0) > 1.10 + delta:
+                    print("Error 2", np.linalg.norm(xyz_absorb[i], axis=0))
+                    # find the lowest point
+                    index_average += 1
+                    xyz_absorb[i, :] = part_r[i, index_average]
+                    passed = False
+                else:
+                    passed = True
+
             counter1 += 1
         else:
             # Particles that are going to be absorbed
@@ -537,6 +559,9 @@ def location_absorption(part_r, height_locs, indices):
             xyz_absorb[i, 0] = x_interpolation[index_interpolation]
             xyz_absorb[i, 1] = y_interpolation[index_interpolation]
             xyz_absorb[i, 2] = z_interpolation[index_interpolation]
+
+            if np.linalg.norm(xyz_absorb[i], axis=0) < 1.0:
+                print("Error 3", np.linalg.norm(xyz_absorb[i], axis=0))
 
             counter2 += 1
 
