@@ -8,8 +8,9 @@ import colorsys
 import timeit
 import concurrent.futures as thread
 import psutil
-import os.path
 from os import path
+from matplotlib.axes._axes import _log as matplotlib_axes_logger
+matplotlib_axes_logger.setLevel('ERROR')
 
 """Program settings"""
 # Initial trajectory simulation
@@ -484,6 +485,11 @@ def main():
                 color = colorsys.hls_to_rgb(color[0], 1 - 1.05 * (1 - color[1]), color[2])
 
                 plt.scatter(energies[i], altitudes[i], c=color)
+            plt.show(block=False)
+
+            plt.figure()
+            # per 20 km-ish
+            plt.hist(altitudes, orientation='horizontal', bins=29)
             plt.show(block=False)
 
     # End program timer
