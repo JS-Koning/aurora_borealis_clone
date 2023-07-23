@@ -627,3 +627,9 @@ def create_plot_errorbar(data, title, x_label, y_label, y_data=None, legend=None
         plt.legend(legend)
     plt.show(block=False)
     return True
+
+def angular_incoming(part_r, height):
+    distances = np.linalg.norm(part_r, axis=2)
+    indices_height = find_nearest_index(distances, height)
+    theta = np.arccos(part_r[:, :, 2]/distances[indices_height])
+    plt.scatter(theta)

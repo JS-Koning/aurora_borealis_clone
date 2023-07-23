@@ -16,9 +16,9 @@ matplotlib_axes_logger.setLevel('ERROR')
 # Initial trajectory simulation
 do_simulation = False
 # Particle absorption simulation
-do_post_processing = False
+do_post_processing = True
 # Data processing
-do_data_processing = True
+do_data_processing = False
 
 """Logging settings"""
 print_simulation_progress = False
@@ -301,7 +301,7 @@ def main():
             if path.exists(file_str):
                 part_r, part_v, indices = utils.load_relevant_data(file_str)
                 indices = indices.astype(int)
-                # distances = np.linalg.norm(part_v, axis=2)
+                # distances = np.linalg.norm(part_r, axis=2)
                 velocities = np.linalg.norm(part_v, axis=2)
                 energies = 0.5 * sim.m_electron * velocities**2 / (sim.q_charge*1000)  # in keV
 
